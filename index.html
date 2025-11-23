@@ -140,7 +140,7 @@
             animation: slideInPrev 0.5s forwards;
         }
         
-        /* АНИМАЦИИ ДЛЯ РЕЖИМА ДИАГОНАЛИ */
+        /* ИСПРАВЛЕННЫЕ ДИАГОНАЛЬНЫЕ АНИМАЦИИ */
         @keyframes slideOutNext {
             0% {
                 transform: translate(-50%, -50%) scale(1);
@@ -154,7 +154,7 @@
         
         @keyframes slideInNext {
             0% {
-                transform: translate(150%, -150%) scale(0.3) rotate(-15deg);
+                transform: translate(-150%, 50%) scale(0.3) rotate(-15deg);
                 opacity: 0;
             }
             100% {
@@ -176,38 +176,7 @@
         
         @keyframes slideInPrev {
             0% {
-                transform: translate(-150%, 50%) scale(0.3) rotate(15deg);
-                opacity: 0;
-            }
-            100% {
-                transform: translate(-50%, -50%) scale(1);
-                opacity: 1;
-            }
-        }
-        
-        /* АНИМАЦИИ ДЛЯ РЕЖИМА ЛЕНТЫ */
-        .feed-mode .photo-slide.leaving-next {
-            animation: feedSlideOut 0.5s forwards;
-        }
-        
-        .feed-mode .photo-slide.entering-next {
-            animation: feedSlideIn 0.5s forwards;
-        }
-        
-        @keyframes feedSlideOut {
-            0% {
-                transform: translate(-50%, -50%) scale(1);
-                opacity: 1;
-            }
-            100% {
-                transform: translate(-50%, -100%) scale(0.8);
-                opacity: 0;
-            }
-        }
-        
-        @keyframes feedSlideIn {
-            0% {
-                transform: translate(-50%, 100%) scale(0.8);
+                transform: translate(50%, -150%) scale(0.3) rotate(15deg);
                 opacity: 0;
             }
             100% {
@@ -289,7 +258,7 @@
             justify-content: center;
         }
         
-        /* НОВЫЙ ДИЗАЙН СТРЕЛОК */
+        /* ДИЗАЙН СТРЕЛОК */
         .hint-next::before {
             content: "→";
             transform: rotate(-45deg);
@@ -587,7 +556,7 @@
             color: inherit;
         }
         
-        /* НИЖНЕЕ МЕНЮ С ПЛАВНЫМ ВЫБОРОМ */
+        /* НИЖНЕЕ МЕНЮ С АНИМАЦИЕЙ ИКОНОК */
         .bottom-tabs {
             display: flex;
             background: rgba(26, 26, 26, 0.95);
@@ -650,11 +619,16 @@
         .tab-icon {
             font-size: 20px;
             margin-bottom: 5px;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: scale(1);
         }
         
         .tab.active .tab-icon {
             transform: scale(1.2);
+        }
+        
+        .tab.hover .tab-icon {
+            transform: scale(1.3);
         }
         
         .tab-highlight {
@@ -778,33 +752,12 @@
                             </div>
                         </div>
                         
-                        <!-- НАСТРОЙКИ НАВИГАЦИИ -->
-                        <div class="settings-section">
-                            <div class="settings-section-title">🎮 Управление</div>
-                            <div class="settings-item">
-                                <div class="setting-info">
-                                    <div class="setting-title">📱 Режим навигации</div>
-                                    <div class="setting-description">Диагональные жесты или лента</div>
-                                </div>
-                                <button class="toggle-btn" id="navModeToggle" onclick="toggleNavMode()">ДИАГОНАЛЬ</button>
-                            </div>
-                            
-                            <div class="settings-item">
-                                <div class="setting-info">
-                                    <div class="setting-title">⚡ Скорость анимации</div>
-                                    <div class="setting-description">Быстрая или плавная смена фото</div>
-                                </div>
-                                <button class="toggle-btn" id="speedToggle" onclick="toggleSpeed()">БЫСТРАЯ</button>
-                            </div>
-                        </div>
-                        
                         <!-- СТАТИСТИКА -->
                         <div class="settings-section">
                             <div class="settings-section-title">📊 Статистика</div>
                             <div style="padding: 15px;">
                                 <p>📸 Просмотрено фото: <span id="statsViewed">0</span></p>
                                 <p>❤️ В избранном: <span id="statsLiked">0</span></p>
-                                <p>🎮 Режим: <span id="statsMode">Диагональ</span></p>
                                 <p>🕒 Время использования: <span id="statsTime">0</span> мин</p>
                             </div>
                         </div>
@@ -821,7 +774,7 @@
             </div>
         </div>
         
-        <!-- НИЖНЕЕ МЕНЮ С ПЛАВНЫМ ВЫБОРОМ -->
+        <!-- НИЖНЕЕ МЕНЮ С АНИМАЦИЕЙ ИКОНОК -->
         <div class="bottom-tabs" id="bottomTabs">
             <div class="tab-highlight" id="tabHighlight"></div>
             <button class="tab active" onclick="showScreen('homeScreen')" data-tab="home">
@@ -900,8 +853,6 @@
             showHints: true,
             showPhotos: true,
             darkTheme: true,
-            navMode: 'diagonal',
-            fastAnimations: true,
             startTime: Date.now(),
             tutorialCompleted: false
         };
@@ -965,7 +916,7 @@
             
             document.getElementById('photoTitle').textContent = appData.showPhotos ? photo.title : '📷 Фото скрыто';
             document.getElementById('photoTitle').style.opacity = appData.showPhotos ? '1' : '0.5';
-            document.getElementById('photoSubtitle').textContent = getNavigationHint();
+            document.getElementById('photoSubtitle').textContent = 'Потяните фото по диагонали';
             document.getElementById('photoCounter').textContent = currentPhotoIndex + 1;
             
             document.getElementById('photoInfo').innerHTML = 
@@ -974,33 +925,23 @@
             document.getElementById('statsViewed').textContent = appData.viewed;
             document.getElementById('statsLiked').textContent = appData.liked.length;
             document.getElementById('statsTime').textContent = Math.floor((Date.now() - appData.startTime) / 60000);
-            document.getElementById('statsMode').textContent = appData.navMode === 'diagonal' ? 'Диагональ' : 'Лента';
             
             updateFavorites();
         }
         
-        function getNavigationHint() {
-            if (appData.navMode === 'diagonal') {
-                return 'Потяните фото по диагонали';
-            } else {
-                return 'Свайпните вверх для следующего фото';
-            }
-        }
-        
-        // Анимированная навигация
+        // Анимированная навигация с исправленными диагоналями
         function nextPhoto() {
             const currentSlide = document.getElementById('currentSlide');
-            const isFeedMode = appData.navMode === 'feed';
             
             currentSlide.classList.remove('current');
-            currentSlide.classList.add(isFeedMode ? 'leaving-next' : 'leaving-next');
+            currentSlide.classList.add('leaving-next');
             
             setTimeout(() => {
                 currentPhotoIndex = (currentPhotoIndex + 1) % photos.length;
                 appData.viewed++;
                 
                 currentSlide.classList.remove('leaving-next');
-                currentSlide.classList.add(isFeedMode ? 'entering-next' : 'entering-next');
+                currentSlide.classList.add('entering-next');
                 
                 updateDisplay();
                 saveData();
@@ -1014,10 +955,6 @@
         }
         
         function previousPhoto() {
-            if (appData.navMode === 'feed') {
-                return; // В режиме ленты только вперед
-            }
-            
             const currentSlide = document.getElementById('currentSlide');
             
             currentSlide.classList.remove('current');
@@ -1086,16 +1023,12 @@
                 
                 // Если переместили достаточно далеко - переключаем фото
                 if (distance > threshold) {
-                    if (appData.navMode === 'diagonal') {
-                        if (dragOffsetX > 0 && dragOffsetY < 0) {
-                            nextPhoto();
-                        } else if (dragOffsetX < 0 && dragOffsetY > 0) {
-                            previousPhoto();
-                        }
-                    } else {
-                        if (dragOffsetY < -threshold) {
-                            nextPhoto();
-                        }
+                    if (dragOffsetX > 0 && dragOffsetY < 0) {
+                        // ↗️ Вправо-вверх - следующее фото
+                        nextPhoto();
+                    } else if (dragOffsetX < 0 && dragOffsetY > 0) {
+                        // ↙️ Влево-вниз - предыдущее фото
+                        previousPhoto();
                     }
                 }
                 
@@ -1109,12 +1042,13 @@
             });
         }
         
-        // Плавное меню с перетаскиванием
+        // Плавное меню с анимацией иконок
         function setupSmoothMenu() {
             const tabs = document.getElementById('bottomTabs');
             let isMenuDragging = false;
             let menuStartX = 0;
             let currentTabIndex = 0;
+            let lastHoveredTab = null;
             
             tabs.addEventListener('touchstart', (e) => {
                 isMenuDragging = true;
@@ -1122,21 +1056,40 @@
                 currentTabIndex = Array.from(tabs.children).findIndex(child => 
                     child.classList.contains('tab') && child.classList.contains('active')
                 );
+                
+                // Анимация при касании
+                const tab = e.target.closest('.tab');
+                if (tab) {
+                    tab.classList.add('hover');
+                    lastHoveredTab = tab;
+                }
             });
             
             tabs.addEventListener('touchmove', (e) => {
                 if (!isMenuDragging) return;
                 
                 const currentX = e.touches[0].clientX;
-                const diffX = currentX - menuStartX;
                 const tabWidth = tabs.offsetWidth / 4;
                 
-                // Вычисляем новый активный таб на основе перемещения
-                let newTabIndex = currentTabIndex - Math.round(diffX / (tabWidth * 0.5));
-                newTabIndex = Math.max(0, Math.min(3, newTabIndex));
+                // Вычисляем над каким табом находится палец
+                const touchX = e.touches[0].clientX;
+                const newTabIndex = Math.floor((touchX / tabs.offsetWidth) * 4);
+                const validIndex = Math.max(0, Math.min(3, newTabIndex));
+                
+                // Убираем анимацию с предыдущего таба
+                if (lastHoveredTab) {
+                    lastHoveredTab.classList.remove('hover');
+                }
+                
+                // Добавляем анимацию на текущий таб
+                const tabsArray = Array.from(tabs.querySelectorAll('.tab'));
+                if (tabsArray[validIndex]) {
+                    tabsArray[validIndex].classList.add('hover');
+                    lastHoveredTab = tabsArray[validIndex];
+                }
                 
                 // Плавно перемещаем подсветку
-                updateTabHighlight(newTabIndex);
+                updateTabHighlight(validIndex);
             });
             
             tabs.addEventListener('touchend', (e) => {
@@ -1151,9 +1104,28 @@
                 let newTabIndex = currentTabIndex - Math.round(diffX / (tabWidth * 0.5));
                 newTabIndex = Math.max(0, Math.min(3, newTabIndex));
                 
+                // Убираем анимацию hover
+                if (lastHoveredTab) {
+                    lastHoveredTab.classList.remove('hover');
+                    lastHoveredTab = null;
+                }
+                
                 // Активируем выбранный таб
                 const tabNames = ['homeScreen', 'searchScreen', 'favoritesScreen', 'settingsScreen'];
                 showScreen(tabNames[newTabIndex]);
+            });
+            
+            // Анимация при простом нажатии (без перетаскивания)
+            tabs.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('touchstart', function() {
+                    this.classList.add('hover');
+                });
+                
+                tab.addEventListener('touchend', function() {
+                    setTimeout(() => {
+                        this.classList.remove('hover');
+                    }, 200);
+                });
             });
         }
         
@@ -1328,23 +1300,15 @@
                 
                 startX = startY = null;
                 
-                if (appData.navMode === 'diagonal') {
-                    if (Math.abs(diffX) > 60 && Math.abs(diffY) > 60) {
-                        if (diffX > 0 && diffY < 0) {
-                            nextPhoto();
-                            return;
-                        }
-                        if (diffX < 0 && diffY > 0) {
-                            previousPhoto();
-                            return;
-                        }
+                // Диагональные жесты
+                if (Math.abs(diffX) > 60 && Math.abs(diffY) > 60) {
+                    if (diffX > 0 && diffY < 0) {
+                        nextPhoto();
+                        return;
                     }
-                } else {
-                    if (Math.abs(diffY) > 80 && Math.abs(diffX) < 50) {
-                        if (diffY < 0) {
-                            nextPhoto();
-                            return;
-                        }
+                    if (diffX < 0 && diffY > 0) {
+                        previousPhoto();
+                        return;
                     }
                 }
                 
@@ -1394,32 +1358,6 @@
             saveData();
         }
         
-        function toggleNavMode() {
-            appData.navMode = appData.navMode === 'diagonal' ? 'feed' : 'diagonal';
-            const btn = document.getElementById('navModeToggle');
-            const mainContent = document.getElementById('mainContent');
-            
-            btn.textContent = appData.navMode === 'diagonal' ? 'ДИАГОНАЛЬ' : 'ЛЕНТА';
-            
-            if (appData.navMode === 'feed') {
-                mainContent.classList.add('feed-mode');
-            } else {
-                mainContent.classList.remove('feed-mode');
-            }
-            
-            updateDisplay();
-            saveData();
-        }
-        
-        function toggleSpeed() {
-            appData.fastAnimations = !appData.fastAnimations;
-            const btn = document.getElementById('speedToggle');
-            
-            btn.textContent = appData.fastAnimations ? 'БЫСТРАЯ' : 'ПЛАВНАЯ';
-            
-            saveData();
-        }
-        
         function exportData() {
             const dataStr = JSON.stringify(appData, null, 2);
             const dataBlob = new Blob([dataStr], {type: 'application/json'});
@@ -1454,8 +1392,6 @@
             document.getElementById('photosToggle').textContent = appData.showPhotos ? 'ВКЛ' : 'ВЫКЛ';
             document.getElementById('photosToggle').classList.toggle('off', !appData.showPhotos);
             
-            document.getElementById('navModeToggle').textContent = appData.navMode === 'diagonal' ? 'ДИАГОНАЛЬ' : 'ЛЕНТА';
-            document.getElementById('speedToggle').textContent = appData.fastAnimations ? 'БЫСТРАЯ' : 'ПЛАВНАЯ';
             document.getElementById('themeToggle').textContent = appData.darkTheme ? 'ТЁМНАЯ' : 'СВЕТЛАЯ';
         }
         
