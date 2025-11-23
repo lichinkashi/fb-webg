@@ -3,756 +3,206 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flashback - Ностальгия в жестах</title>
-    <meta name="theme-color" content="#8B0000">
+    <title>Photo Gallery</title>
     <style>
-        * { 
-            margin: 0; 
-            padding: 0; 
-            box-sizing: border-box; 
-            -webkit-user-select: none;
-            -webkit-touch-callout: none;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        
-        body { 
-            background: #000; 
-            color: #fff; 
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-            height: 100vh;
-            overflow: hidden;
-            padding-bottom: env(safe-area-inset-bottom);
-        }
-        
-        .app {
-            height: 100vh;
+
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
             display: flex;
-            flex-direction: column;
-            padding-bottom: 60px; /* Место для меню */
-        }
-        
-        /* ВЕРХНЯЯ ПАНЕЛЬ */
-        .header {
-            padding: 20px;
-            background: #8B0000;
-            text-align: center;
-            font-weight: bold;
-            color: #fff;
-            position: relative;
-            z-index: 100;
-        }
-        
-        /* ОСНОВНОЙ КОНТЕНТ */
-        .main-content {
-            flex: 1;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .screen {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: none;
-        }
-        
-        .screen.active {
-            display: flex;
-            flex-direction: column;
-        }
-        
-        /* ЭКРАН ФОТО */
-        .photo-screen {
-            background: #000;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
-            padding: 20px;
-            position: relative;
         }
-        
-        .photo-viewport {
+
+        .gallery-container {
+            position: relative;
             width: 100%;
-            height: 70vh;
-            position: relative;
+            max-width: 800px;
+            height: 600px;
             overflow: hidden;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
         }
-        
+
         .photo-slide {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            border-radius: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.4s ease;
-            background-size: cover;
-            background-position: center;
+            object-fit: cover;
+            opacity: 0;
         }
-        
-        .photo-content {
-            text-align: center;
-            background: rgba(0,0,0,0.7);
-            padding: 20px;
-            border-radius: 15px;
-            max-width: 90%;
+
+        .photo-slide.active {
+            opacity: 1;
+            z-index: 2;
         }
-        
-        .photo-title {
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 10px;
-            color: #fff;
+
+        /* Анимация для перехода ВПЕРЕД */
+        @keyframes slideForward {
+            0% {
+                transform: translate(-100%, 100%) scale(1);
+                opacity: 0;
+            }
+            20% {
+                opacity: 1;
+            }
+            80% {
+                opacity: 1;
+            }
+            100% {
+                transform: translate(100%, -100%) scale(0.3);
+                opacity: 0;
+            }
         }
-        
-        .photo-subtitle {
-            font-size: 14px;
-            opacity: 0.8;
-            color: #fff;
+
+        /* Анимация для перехода НАЗАД */
+        @keyframes slideBackward {
+            0% {
+                transform: translate(100%, -100%) scale(1);
+                opacity: 0;
+            }
+            20% {
+                opacity: 1;
+            }
+            80% {
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-100%, 100%) scale(0.3);
+                opacity: 0;
+            }
         }
-        
-        .photo-info {
+
+        .photo-slide.forward {
+            animation: slideForward 0.8s ease-in-out;
+            z-index: 3;
+        }
+
+        .photo-slide.backward {
+            animation: slideBackward 0.8s ease-in-out;
+            z-index: 3;
+        }
+
+        .controls {
             position: absolute;
             bottom: 20px;
-            left: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 4;
+            display: flex;
+            gap: 20px;
+        }
+
+        .btn {
+            background: rgba(255,255,255,0.9);
+            border: none;
+            padding: 15px 25px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn:hover {
+            background: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+
+        .counter {
+            position: absolute;
+            top: 20px;
             right: 20px;
-            background: rgba(0,0,0,0.8);
-            padding: 15px;
-            border-radius: 10px;
-            font-size: 12px;
-            text-align: center;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        
-        .photo-info.visible {
-            opacity: 1;
-        }
-        
-        /* ПОДСКАЗКИ ЖЕСТОВ */
-        .gesture-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-        }
-        
-        .gesture-hint {
-            position: absolute;
-            width: 50px;
-            height: 50px;
-            background: rgba(0,0,0,0.5);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0% { opacity: 0.3; transform: scale(0.9); }
-            50% { opacity: 0.6; transform: scale(1.1); }
-            100% { opacity: 0.3; transform: scale(0.9); }
-        }
-        
-        .hint-next { bottom: 30px; left: 30px; }
-        .hint-prev { top: 30px; right: 30px; }
-        .hint-info { top: 30px; left: 30px; }
-        .hint-like { bottom: 30px; right: 30px; }
-        
-        /* АНИМАЦИИ */
-        .slide-out-next {
-            animation: slideOutNext 0.4s forwards;
-        }
-        
-        .slide-in-next {
-            animation: slideInNext 0.4s forwards;
-        }
-        
-        .slide-out-prev {
-            animation: slideOutPrev 0.4s forwards;
-        }
-        
-        .slide-in-prev {
-            animation: slideInPrev 0.4s forwards;
-        }
-        
-        @keyframes slideOutNext {
-            0% { transform: translateX(0) scale(1); opacity: 1; }
-            100% { transform: translateX(100%) scale(0.8); opacity: 0; }
-        }
-        
-        @keyframes slideInNext {
-            0% { transform: translateX(-100%) scale(0.8); opacity: 0; }
-            100% { transform: translateX(0) scale(1); opacity: 1; }
-        }
-        
-        @keyframes slideOutPrev {
-            0% { transform: translateX(0) scale(1); opacity: 1; }
-            100% { transform: translateX(-100%) scale(0.8); opacity: 0; }
-        }
-        
-        @keyframes slideInPrev {
-            0% { transform: translateX(100%) scale(0.8); opacity: 0; }
-            100% { transform: translateX(0) scale(1); opacity: 1; }
-        }
-        
-        /* НИЖНЕЕ МЕНЮ */
-        .bottom-menu {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            display: flex;
-            background: #1a1a1a;
-            height: 60px;
-            border-top: 1px solid #333;
-            z-index: 1000;
-            padding-bottom: env(safe-area-inset-bottom);
-        }
-        
-        .menu-tab {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background: none;
-            border: none;
-            color: #888;
-            font-size: 11px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .menu-tab.active {
-            color: #8B0000;
-        }
-        
-        .menu-icon {
-            font-size: 20px;
-            margin-bottom: 4px;
-            transition: transform 0.3s;
-        }
-        
-        .menu-tab.active .menu-icon {
-            transform: scale(1.2);
-        }
-        
-        /* ЭКРАН ИЗБРАННОГО */
-        .favorites-screen {
-            background: #000;
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-        }
-        
-        .favorites-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin-top: 20px;
-        }
-        
-        .favorite-item {
-            background: linear-gradient(135deg, #8B0000, #600000);
-            border-radius: 15px;
-            padding: 30px 15px;
-            text-align: center;
-            color: #fff;
-            font-size: 16px;
-        }
-        
-        .empty-favorites {
-            grid-column: 1 / -1;
-            text-align: center;
-            padding: 40px;
-            opacity: 0.7;
-        }
-        
-        /* ЭКРАН ПОИСКА */
-        .search-screen {
-            background: #000;
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-        }
-        
-        .search-input {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid #8B0000;
-            border-radius: 25px;
-            background: rgba(139,0,0,0.1);
-            color: #fff;
-            font-size: 16px;
-            margin-bottom: 20px;
-        }
-        
-        .search-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        
-        .search-tag {
-            background: rgba(139,0,0,0.2);
-            padding: 10px 15px;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        
-        .search-tag.active {
-            background: #8B0000;
-        }
-        
-        /* ЭКРАН НАСТРОЕК */
-        .settings-screen {
-            background: #000;
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-        }
-        
-        .settings-item {
-            background: #1a1a1a;
-            padding: 20px;
-            border-radius: 15px;
-            margin-bottom: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .settings-title {
-            font-size: 16px;
-        }
-        
-        .settings-description {
-            font-size: 12px;
-            opacity: 0.7;
-            margin-top: 5px;
-        }
-        
-        .toggle-btn {
-            background: #8B0000;
-            border: none;
+            background: rgba(0,0,0,0.7);
             color: white;
             padding: 10px 20px;
             border-radius: 20px;
-            cursor: pointer;
-            font-weight: bold;
-            min-width: 80px;
-        }
-        
-        .toggle-btn.off {
-            background: #555;
-        }
-        
-        .like-animation {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 80px;
-            opacity: 0;
-            pointer-events: none;
-        }
-        
-        .like-animation.show {
-            animation: heartPop 0.6s ease;
-        }
-        
-        @keyframes heartPop {
-            0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
-            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
-            100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+            font-size: 14px;
+            z-index: 4;
         }
     </style>
 </head>
 <body>
-    <div class="app">
-        <!-- ВЕРХНЯЯ ПАНЕЛЬ -->
-        <div class="header">
-            📸 Flashback • <span id="photoCounter">1</span>/5
-        </div>
+    <div class="gallery-container">
+        <!-- Добавьте ваши фото сюда -->
+        <img src="photo1.jpg" class="photo-slide active" alt="Photo 1">
+        <img src="photo2.jpg" class="photo-slide" alt="Photo 2">
+        <img src="photo3.jpg" class="photo-slide" alt="Photo 3">
+        <img src="photo4.jpg" class="photo-slide" alt="Photo 4">
         
-        <!-- ОСНОВНОЙ КОНТЕНТ -->
-        <div class="main-content">
-            <!-- ГЛАВНЫЙ ЭКРАН -->
-            <div class="screen active" id="homeScreen">
-                <div class="photo-screen">
-                    <div class="photo-viewport">
-                        <div class="photo-slide current" id="currentSlide" style="background: linear-gradient(135deg, #8B0000, #600000);">
-                            <div class="photo-content">
-                                <div class="photo-title" id="photoTitle">Пляжное фото</div>
-                                <div class="photo-subtitle" id="photoSubtitle">Потяните фото по диагонали</div>
-                            </div>
-                            <div class="photo-info" id="photoInfo">
-                                📅 15 июня 2023 • 📍 Бали, Индонезия<br>
-                                ⚙️ f/2.8 • 1/500s • ISO 100
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="gesture-overlay">
-                        <div class="gesture-hint hint-next">↗️</div>
-                        <div class="gesture-hint hint-prev">↙️</div>
-                        <div class="gesture-hint hint-info">⬆️</div>
-                        <div class="gesture-hint hint-like">👆👆</div>
-                    </div>
-                    
-                    <div class="like-animation" id="likeAnimation">❤️</div>
-                </div>
-            </div>
-            
-            <!-- ПОИСК -->
-            <div class="screen" id="searchScreen">
-                <div class="search-screen">
-                    <h2 style="text-align: center; margin-bottom: 20px;">🔍 Поиск</h2>
-                    <input class="search-input" placeholder="Введите тег или дату...">
-                    <div class="search-tags">
-                        <div class="search-tag active">Все</div>
-                        <div class="search-tag">🏖️ Отпуск</div>
-                        <div class="search-tag">👨‍👩‍👧‍👦 Семья</div>
-                        <div class="search-tag">✈️ Путешествие</div>
-                        <div class="search-tag">🏙️ Город</div>
-                    </div>
-                    <div class="favorites-grid" id="searchResults">
-                        <div class="favorite-item">Пляжное фото<br><small>15 июня 2023</small></div>
-                        <div class="favorite-item">Горный поход<br><small>22 июля 2023</small></div>
-                        <div class="favorite-item">Городская ночь<br><small>5 августа 2023</small></div>
-                        <div class="favorite-item">Семейный ужин<br><small>12 сентября 2023</small></div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- ИЗБРАННОЕ -->
-            <div class="screen" id="favoritesScreen">
-                <div class="favorites-screen">
-                    <h2 style="text-align: center; margin-bottom: 20px;">❤️ Избранное</h2>
-                    <div class="favorites-grid" id="favoritesGrid">
-                        <div class="empty-favorites">Нет избранных фото<br><small>Двойной тап чтобы добавить ❤️</small></div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- НАСТРОЙКИ -->
-            <div class="screen" id="settingsScreen">
-                <div class="settings-screen">
-                    <h2 style="text-align: center; margin-bottom: 20px;">⚙️ Настройки</h2>
-                    
-                    <div class="settings-item">
-                        <div>
-                            <div class="settings-title">🎮 Подсказки жестов</div>
-                            <div class="settings-description">Показывать подсказки для навигации</div>
-                        </div>
-                        <button class="toggle-btn" onclick="toggleSetting('hints')">ВКЛ</button>
-                    </div>
-                    
-                    <div class="settings-item">
-                        <div>
-                            <div class="settings-title">🌈 Тёмная тема</div>
-                            <div class="settings-description">Использовать тёмную цветовую схему</div>
-                        </div>
-                        <button class="toggle-btn" onclick="toggleSetting('theme')">ВКЛ</button>
-                    </div>
-                    
-                    <div class="settings-item">
-                        <div>
-                            <div class="settings-title">📊 Статистика</div>
-                            <div class="settings-description">Просмотрено фото: <span id="statsViewed">0</span></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <div class="counter">1 / 4</div>
         
-        <!-- НИЖНЕЕ МЕНЮ -->
-        <div class="bottom-menu">
-            <button class="menu-tab active" onclick="showScreen('homeScreen')">
-                <div class="menu-icon">📸</div>
-                <div>Главная</div>
-            </button>
-            <button class="menu-tab" onclick="showScreen('searchScreen')">
-                <div class="menu-icon">🔍</div>
-                <div>Поиск</div>
-            </button>
-            <button class="menu-tab" onclick="showScreen('favoritesScreen')">
-                <div class="menu-icon">❤️</div>
-                <div>Избранное</div>
-            </button>
-            <button class="menu-tab" onclick="showScreen('settingsScreen')">
-                <div class="menu-icon">⚙️</div>
-                <div>Настройки</div>
-            </button>
+        <div class="controls">
+            <button class="btn prev-btn">← Назад</button>
+            <button class="btn next-btn">Вперед →</button>
         </div>
     </div>
 
     <script>
-        // Данные приложения
-        const photos = [
-            { 
-                id: 1, 
-                title: "Пляжное фото", 
-                color: "linear-gradient(135deg, #8B0000, #600000)",
-                info: "📅 15 июня 2023 • 📍 Бали, Индонезия<br>⚙️ f/2.8 • 1/500s • ISO 100",
-                tags: ["отпуск", "пляж"]
-            },
-            { 
-                id: 2, 
-                title: "Горный поход", 
-                color: "linear-gradient(135deg, #006400, #004d00)",
-                info: "📅 22 июля 2023 • 📍 Альпы, Швейцария<br>⚙️ f/4.0 • 1/250s • ISO 200",
-                tags: ["природа", "горы"]
-            },
-            { 
-                id: 3, 
-                title: "Городская ночь", 
-                color: "linear-gradient(135deg, #4B0082, #2E004F)",
-                info: "📅 5 августа 2023 • 📍 Токио, Япония<br>⚙️ f/1.8 • 1/30s • ISO 800",
-                tags: ["город", "ночь"]
-            },
-            { 
-                id: 4, 
-                title: "Семейный ужин", 
-                color: "linear-gradient(135deg, #B8860B, #8B6508)",
-                info: "📅 12 сентября 2023 • 📍 Париж, Франция<br>⚙️ f/2.2 • 1/60s • ISO 400",
-                tags: ["семья", "ужин"]
-            },
-            { 
-                id: 5, 
-                title: "Путешествие", 
-                color: "linear-gradient(135deg, #000080, #000050)",
-                info: "📅 28 октября 2023 • 📍 Нью-Йорк, США<br>⚙️ f/5.6 • 1/125s • ISO 100",
-                tags: ["путешествие", "город"]
-            }
-        ];
+        const photos = document.querySelectorAll('.photo-slide');
+        const prevBtn = document.querySelector('.prev-btn');
+        const nextBtn = document.querySelector('.next-btn');
+        const counter = document.querySelector('.counter');
         
-        let currentPhotoIndex = 0;
-        let likedPhotos = [];
-        let appData = {
-            viewed: 0,
-            showHints: true,
-            darkTheme: true
-        };
-        
-        let lastTap = 0;
-        let infoVisible = false;
-        let isDragging = false;
-        let startX = 0;
-        let startY = 0;
+        let currentPhoto = 0;
+        const totalPhotos = photos.length;
 
-        // Показать экран
-        function showScreen(screenId) {
-            document.querySelectorAll('.screen').forEach(screen => {
-                screen.classList.remove('active');
-            });
-            document.querySelectorAll('.menu-tab').forEach(tab => {
-                tab.classList.remove('active');
+        function updateCounter() {
+            counter.textContent = `${currentPhoto + 1} / ${totalPhotos}`;
+        }
+
+        function showPhoto(index, direction) {
+            // Скрываем все фото
+            photos.forEach(photo => {
+                photo.classList.remove('active', 'forward', 'backward');
             });
             
-            document.getElementById(screenId).classList.add('active');
-            event.currentTarget.classList.add('active');
+            // Показываем текущее фото
+            photos[index].classList.add('active');
             
-            if (screenId === 'favoritesScreen') {
-                updateFavorites();
-            }
-        }
-
-        // Обновить отображение фото
-        function updatePhoto() {
-            const photo = photos[currentPhotoIndex];
-            const slide = document.getElementById('currentSlide');
-            
-            slide.style.background = photo.color;
-            document.getElementById('photoTitle').textContent = photo.title;
-            document.getElementById('photoInfo').innerHTML = photo.info;
-            document.getElementById('photoCounter').textContent = currentPhotoIndex + 1;
-            
-            // Скрываем подсказку после 10 просмотренных фото
-            const subtitle = document.getElementById('photoSubtitle');
-            if (appData.viewed >= 10) {
-                subtitle.style.opacity = '0';
-            }
-        }
-
-        // Анимация перехода
-        function animateTransition(direction, callback) {
-            const slide = document.getElementById('currentSlide');
-            slide.classList.remove('current');
-            
-            if (direction === 'next') {
-                slide.classList.add('slide-out-next');
-            } else {
-                slide.classList.add('slide-out-prev');
+            // Добавляем анимацию для предыдущего фото
+            if (direction === 'forward') {
+                photos[currentPhoto].classList.add('forward');
+            } else if (direction === 'backward') {
+                photos[currentPhoto].classList.add('backward');
             }
             
-            setTimeout(() => {
-                callback();
-                slide.classList.remove('slide-out-next', 'slide-out-prev');
-                
-                if (direction === 'next') {
-                    slide.classList.add('slide-in-next');
-                } else {
-                    slide.classList.add('slide-in-prev');
-                }
-                
-                setTimeout(() => {
-                    slide.classList.remove('slide-in-next', 'slide-in-prev');
-                    slide.classList.add('current');
-                }, 400);
-            }, 400);
+            currentPhoto = index;
+            updateCounter();
         }
 
-        // Следующее фото
         function nextPhoto() {
-            appData.viewed++;
-            animateTransition('next', () => {
-                currentPhotoIndex = (currentPhotoIndex + 1) % photos.length;
-                updatePhoto();
-            });
+            const nextIndex = (currentPhoto + 1) % totalPhotos;
+            showPhoto(nextIndex, 'forward');
         }
 
-        // Предыдущее фото
-        function previousPhoto() {
-            appData.viewed++;
-            animateTransition('prev', () => {
-                currentPhotoIndex = (currentPhotoIndex - 1 + photos.length) % photos.length;
-                updatePhoto();
-            });
+        function prevPhoto() {
+            const prevIndex = (currentPhoto - 1 + totalPhotos) % totalPhotos;
+            showPhoto(prevIndex, 'backward');
         }
 
-        // Лайк фото
-        function toggleLike() {
-            const photo = photos[currentPhotoIndex];
-            const isLiked = likedPhotos.includes(photo.id);
-            
-            if (isLiked) {
-                likedPhotos = likedPhotos.filter(id => id !== photo.id);
-            } else {
-                likedPhotos.push(photo.id);
-                // Анимация сердца
-                const heart = document.getElementById('likeAnimation');
-                heart.classList.add('show');
-                setTimeout(() => heart.classList.remove('show'), 600);
-            }
-            
-            updateFavorites();
-        }
+        // Обработчики событий
+        nextBtn.addEventListener('click', nextPhoto);
+        prevBtn.addEventListener('click', prevPhoto);
 
-        // Обновить избранное
-        function updateFavorites() {
-            const grid = document.getElementById('favoritesGrid');
-            
-            if (likedPhotos.length === 0) {
-                grid.innerHTML = '<div class="empty-favorites">Нет избранных фото<br><small>Двойной тап чтобы добавить ❤️</small></div>';
-            } else {
-                grid.innerHTML = likedPhotos.map(photoId => {
-                    const photo = photos.find(p => p.id === photoId);
-                    return `<div class="favorite-item">${photo.title}<br><small style="font-size: 24px;">❤️</small></div>`;
-                }).join('');
-            }
-        }
-
-        // Переключение настроек
-        function toggleSetting(setting) {
-            const btn = event.target;
-            
-            if (setting === 'hints') {
-                appData.showHints = !appData.showHints;
-                btn.textContent = appData.showHints ? 'ВКЛ' : 'ВЫКЛ';
-                btn.classList.toggle('off', !appData.showHints);
-                
-                const overlay = document.querySelector('.gesture-overlay');
-                overlay.style.display = appData.showHints ? 'block' : 'none';
-            }
-        }
-
-        // Жесты
-        function setupGestures() {
-            const viewport = document.querySelector('.photo-viewport');
-            let verticalSwipe = false;
-            
-            viewport.addEventListener('touchstart', (e) => {
-                isDragging = true;
-                startX = e.touches[0].clientX;
-                startY = e.touches[0].clientY;
-                verticalSwipe = false;
-                
-                // Двойной тап
-                const currentTime = new Date().getTime();
-                const tapLength = currentTime - lastTap;
-                if (tapLength < 300 && tapLength > 0) {
-                    toggleLike();
-                }
-                lastTap = currentTime;
-            });
-            
-            viewport.addEventListener('touchmove', (e) => {
-                if (!isDragging) return;
-                
-                const currentY = e.touches[0].clientY;
-                const diffY = currentY - startY;
-                
-                // Определяем вертикальный свайп
-                if (Math.abs(diffY) > 10) {
-                    verticalSwipe = true;
-                }
-            });
-            
-            viewport.addEventListener('touchend', (e) => {
-                if (!isDragging) return;
-                
-                const endX = e.changedTouches[0].clientX;
-                const endY = e.changedTouches[0].clientY;
-                
-                const diffX = endX - startX;
-                const diffY = endY - startY;
-                
-                // Вертикальные свайпы для информации
-                if (verticalSwipe && Math.abs(diffY) > 50 && Math.abs(diffX) < 50) {
-                    const info = document.getElementById('photoInfo');
-                    if (diffY < 0) {
-                        // Свайп вверх - показать информацию
-                        infoVisible = true;
-                    } else {
-                        // Свайп вниз - скрыть информацию
-                        infoVisible = false;
-                    }
-                    info.classList.toggle('visible', infoVisible);
-                }
-                // Диагональные жесты для навигации
-                else if (Math.abs(diffX) > 50 && Math.abs(diffY) > 50) {
-                    if (diffX > 0 && diffY < 0) {
-                        nextPhoto();
-                    } else if (diffX < 0 && diffY > 0) {
-                        previousPhoto();
-                    }
-                }
-                
-                isDragging = false;
-            });
-        }
-
-        // Запуск приложения
-        document.addEventListener('DOMContentLoaded', () => {
-            updatePhoto();
-            setupGestures();
-            document.getElementById('statsViewed').textContent = appData.viewed;
+        // Стрелки клавиатуры
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') nextPhoto();
+            if (e.key === 'ArrowLeft') prevPhoto();
         });
+
+        // Автопереход (опционально)
+        // setInterval(nextPhoto, 5000);
     </script>
 </body>
 </html>
