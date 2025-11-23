@@ -35,8 +35,33 @@
             background: rgba(139, 0, 0, 0.9);
             text-align: center;
             font-weight: bold;
+            position: relative;
+            z-index: 100;
         }
         
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+        }
+        
+        .screen.active {
+            display: flex;
+        }
+        
+        /* ЭКРАН ПРОСМОТРА ФОТО */
         .photo-screen {
             flex: 1;
             display: flex;
@@ -44,10 +69,22 @@
             justify-content: center;
             align-items: center;
             position: relative;
+            background: #000;
         }
         
-        .photo-container {
-            width: 95%;
+        .photo-viewport {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .photo-slide {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
             height: 70vh;
             background: linear-gradient(135deg, #8B0000, #600000);
             border-radius: 25px;
@@ -55,14 +92,33 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            position: relative;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             box-shadow: 0 10px 30px rgba(139, 0, 0, 0.3);
+        }
+        
+        .photo-slide.current {
+            z-index: 3;
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+        
+        .photo-slide.next {
+            z-index: 2;
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.8) translateX(100px);
+        }
+        
+        .photo-slide.prev {
+            z-index: 1;
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.8) translateX(-100px);
         }
         
         .photo-content {
             text-align: center;
             font-size: 28px;
             font-weight: bold;
+            transition: transform 0.3s;
         }
         
         .photo-subtitle {
@@ -78,6 +134,7 @@
             width: 100%;
             height: 100%;
             pointer-events: none;
+            z-index: 4;
         }
         
         .gesture-hint {
@@ -128,11 +185,123 @@
             background: rgba(255, 255, 255, 0.2);
         }
         
+        /* ЭКРАН ИЗБРАННОГО */
+        .favorites-screen {
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .favorites-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .favorites-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+        
+        .favorite-item {
+            background: linear-gradient(135deg, #8B0000, #600000);
+            border-radius: 15px;
+            padding: 30px 15px;
+            text-align: center;
+            font-size: 18px;
+            transition: transform 0.2s;
+        }
+        
+        .favorite-item:active {
+            transform: scale(0.95);
+        }
+        
+        .empty-favorites {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 40px;
+            opacity: 0.7;
+            font-size: 18px;
+        }
+        
+        /* ЭКРАН НАСТРОЕК */
+        .settings-screen {
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .settings-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .settings-list {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        .settings-item {
+            background: #1a1a1a;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px 0;
+            display: flex;
+            justify-content: between;
+            align-items: center;
+        }
+        
+        .setting-info {
+            flex: 1;
+        }
+        
+        .setting-title {
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+        
+        .setting-description {
+            font-size: 14px;
+            opacity: 0.7;
+        }
+        
+        .toggle-btn {
+            background: #8B0000;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            min-width: 100px;
+            transition: background 0.3s;
+        }
+        
+        .toggle-btn.off {
+            background: #555;
+        }
+        
+        .action-btn {
+            background: #8B0000;
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 20px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            transition: background 0.3s;
+        }
+        
+        .action-btn:active {
+            background: #600000;
+        }
+        
+        /* НИЖНЕЕ МЕНЮ */
         .bottom-tabs {
             display: flex;
             background: #1a1a1a;
             border-top: 1px solid #333;
             height: 70px;
+            position: relative;
+            z-index: 100;
         }
         
         .tab {
@@ -147,6 +316,7 @@
             font-size: 12px;
             cursor: pointer;
             transition: all 0.3s;
+            padding: 10px 5px;
         }
         
         .tab.active {
@@ -156,54 +326,11 @@
         .tab-icon {
             font-size: 20px;
             margin-bottom: 5px;
+            transition: transform 0.3s;
         }
         
-        /* Экраны */
-        .screen {
-            display: none;
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-        }
-        
-        .screen.active {
-            display: block;
-        }
-        
-        .favorites-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin-top: 20px;
-        }
-        
-        .favorite-item {
-            background: linear-gradient(135deg, #8B0000, #600000);
-            border-radius: 15px;
-            padding: 30px 15px;
-            text-align: center;
-            font-size: 18px;
-        }
-        
-        .settings-item {
-            background: #1a1a1a;
-            border-radius: 15px;
-            padding: 20px;
-            margin: 15px 0;
-        }
-        
-        .setting-title {
-            font-size: 18px;
-            margin-bottom: 10px;
-        }
-        
-        .toggle-btn {
-            background: #8B0000;
-            border: none;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 20px;
-            cursor: pointer;
+        .tab.active .tab-icon {
+            transform: scale(1.2);
         }
         
         .swipe-indicator {
@@ -215,85 +342,155 @@
             opacity: 0;
             transition: opacity 0.3s;
             pointer-events: none;
+            z-index: 5;
         }
         
         .swipe-left { transform: translate(-150%, -50%) rotate(-10deg); }
         .swipe-right { transform: translate(50%, -50%) rotate(10deg); }
+        
+        .slide-left {
+            animation: slideLeft 0.4s forwards;
+        }
+        
+        .slide-right {
+            animation: slideRight 0.4s forwards;
+        }
+        
+        @keyframes slideLeft {
+            from {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+            to {
+                transform: translate(-150%, -50%) scale(0.8);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes slideRight {
+            from {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+            to {
+                transform: translate(50%, -50%) scale(0.8);
+                opacity: 0;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="app">
         <!-- Верхняя панель -->
         <div class="status-bar" id="statusBar">
-            📸 Flashback • Фото <span id="photoCounter">1</span>/5
+            📸 Flashback • <span id="photoCounter">1</span>/5
         </div>
         
-        <!-- Главный экран просмотра -->
-        <div class="screen active" id="homeScreen">
-            <div class="photo-screen">
-                <div class="photo-container" id="photoContainer">
-                    <div class="photo-content">
-                        <div id="photoTitle">ФОТО 1</div>
-                        <div class="photo-subtitle" id="photoSubtitle">Свайпни ↗️ или ↙️</div>
+        <!-- Основной контент -->
+        <div class="main-content">
+            <!-- ЭКРАН ПРОСМОТРА ФОТО -->
+            <div class="screen active" id="homeScreen">
+                <div class="photo-screen">
+                    <div class="photo-viewport">
+                        <div class="photo-slide current" id="currentSlide">
+                            <div class="photo-content">
+                                <div id="photoTitle">ФОТО 1</div>
+                                <div class="photo-subtitle" id="photoSubtitle">Свайпни ↗️ или ↙️</div>
+                            </div>
+                        </div>
+                        
+                        <div class="swipe-indicator swipe-left">👈</div>
+                        <div class="swipe-indicator swipe-right">👉</div>
                     </div>
                     
-                    <div class="gesture-overlay">
+                    <div class="gesture-overlay" id="gestureOverlay">
                         <div class="gesture-hint hint-next">↗️</div>
                         <div class="gesture-hint hint-prev">↙️</div>
                         <div class="gesture-hint hint-like">👆</div>
                     </div>
                     
-                    <div class="swipe-indicator swipe-left">👈</div>
-                    <div class="swipe-indicator swipe-right">👉</div>
+                    <div class="navigation-buttons">
+                        <button class="nav-btn" onclick="previousPhoto()">←</button>
+                        <button class="nav-btn" onclick="toggleLike()">❤️</button>
+                        <button class="nav-btn" onclick="nextPhoto()">→</button>
+                    </div>
                 </div>
-                
-                <div class="navigation-buttons">
-                    <button class="nav-btn" onclick="previousPhoto()">←</button>
-                    <button class="nav-btn" onclick="toggleLike()">❤️</button>
-                    <button class="nav-btn" onclick="nextPhoto()">→</button>
+            </div>
+            
+            <!-- ЭКРАН ИЗБРАННОГО -->
+            <div class="screen" id="favoritesScreen">
+                <div class="favorites-screen">
+                    <div class="favorites-header">
+                        <h2>❤️ Избранное</h2>
+                        <p>Лайкнутые фото</p>
+                    </div>
+                    <div class="favorites-grid" id="favoritesGrid">
+                        <!-- Избранные фото появятся здесь -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ЭКРАН НАСТРОЕК -->
+            <div class="screen" id="settingsScreen">
+                <div class="settings-screen">
+                    <div class="settings-header">
+                        <h2>⚙️ Настройки</h2>
+                        <p>Настройте приложение</p>
+                    </div>
+                    <div class="settings-list">
+                        <div class="settings-item">
+                            <div class="setting-info">
+                                <div class="setting-title">🎮 Подсказки жестов</div>
+                                <div class="setting-description">Показывать подсказки для навигации</div>
+                            </div>
+                            <button class="toggle-btn" id="hintsToggle" onclick="toggleHints()">ВКЛ</button>
+                        </div>
+                        
+                        <div class="settings-item">
+                            <div class="setting-info">
+                                <div class="setting-title">📊 Статистика</div>
+                                <div class="setting-description">Ваша активность в приложении</div>
+                            </div>
+                        </div>
+                        <div style="background: #1a1a1a; border-radius: 15px; padding: 15px; margin: 10px 0;">
+                            <p>📸 Просмотрено фото: <span id="statsViewed">0</span></p>
+                            <p>❤️ В избранном: <span id="statsLiked">0</span></p>
+                            <p>🕒 Время использования: <span id="statsTime">0</span> мин</p>
+                        </div>
+                        
+                        <div class="settings-item">
+                            <div class="setting-info">
+                                <div class="setting-title">🎨 Внешний вид</div>
+                                <div class="setting-description">Настройте тему приложения</div>
+                            </div>
+                            <button class="toggle-btn" id="themeToggle" onclick="toggleTheme()">ТЁМНАЯ</button>
+                        </div>
+                        
+                        <div class="settings-item">
+                            <div class="setting-info">
+                                <div class="setting-title">💾 Данные приложения</div>
+                                <div class="setting-description">Управление данными и сброс</div>
+                            </div>
+                        </div>
+                        <button class="action-btn" onclick="exportData()">📤 Экспорт данных</button>
+                        <button class="action-btn" onclick="clearData()">🗑️ Очистить все данные</button>
+                        <button class="action-btn" onclick="resetTutorial()">🔄 Сбросить обучение</button>
+                    </div>
                 </div>
             </div>
         </div>
         
-        <!-- Экран избранного -->
-        <div class="screen" id="favoritesScreen">
-            <h2 style="text-align: center; margin: 20px 0;">❤️ Избранное</h2>
-            <div class="favorites-grid" id="favoritesGrid">
-                <!-- Избранные фото появятся здесь -->
-            </div>
-        </div>
-        
-        <!-- Экран настроек -->
-        <div class="screen" id="settingsScreen">
-            <h2 style="text-align: center; margin: 20px 0;">⚙️ Настройки</h2>
-            <div class="settings-list">
-                <div class="settings-item">
-                    <div class="setting-title">🎮 Подсказки жестов</div>
-                    <button class="toggle-btn" onclick="toggleHints()">ВКЛЮЧЕНО</button>
-                </div>
-                <div class="settings-item">
-                    <div class="setting-title">📊 Статистика</div>
-                    <p>Просмотрено фото: <span id="statsViewed">0</span></p>
-                    <p>В избранном: <span id="statsLiked">0</span></p>
-                </div>
-                <div class="settings-item">
-                    <div class="setting-title">💾 Данные</div>
-                    <button class="toggle-btn" onclick="clearData()">Очистить данные</button>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Нижнее меню -->
+        <!-- НИЖНЕЕ МЕНЮ -->
         <div class="bottom-tabs">
-            <button class="tab active" onclick="showTab('home')">
+            <button class="tab active" onclick="showScreen('homeScreen')">
                 <div class="tab-icon">📸</div>
                 <div>Главная</div>
             </button>
-            <button class="tab" onclick="showTab('favorites')">
+            <button class="tab" onclick="showScreen('favoritesScreen')">
                 <div class="tab-icon">❤️</div>
                 <div>Избранное</div>
             </button>
-            <button class="tab" onclick="showTab('settings')">
+            <button class="tab" onclick="showScreen('settingsScreen')">
                 <div class="tab-icon">⚙️</div>
                 <div>Настройки</div>
             </button>
@@ -314,7 +511,10 @@
         let appData = {
             viewed: 0,
             liked: [],
-            showHints: true
+            showHints: true,
+            darkTheme: true,
+            startTime: Date.now(),
+            tutorialCompleted: false
         };
         
         // Инициализация
@@ -322,22 +522,30 @@
             loadData();
             updateDisplay();
             setupGestures();
+            updateSettingsButtons();
         }
         
         // Загрузка данных
         function loadData() {
             const saved = localStorage.getItem('flashbackApp');
             if (saved) {
-                appData = JSON.parse(saved);
+                const loaded = JSON.parse(saved);
+                appData = { ...appData, ...loaded };
+                
                 // Восстанавливаем лайки
                 photos.forEach(photo => {
                     photo.liked = appData.liked.includes(photo.id);
                 });
             }
+            appData.startTime = Date.now();
         }
         
         // Сохранение данных
         function saveData() {
+            // Рассчитываем время использования
+            const timeUsed = Math.floor((Date.now() - appData.startTime) / 60000);
+            appData.usageTime = timeUsed;
+            
             localStorage.setItem('flashbackApp', JSON.stringify(appData));
         }
         
@@ -354,26 +562,45 @@
             // Обновляем статистику
             document.getElementById('statsViewed').textContent = appData.viewed;
             document.getElementById('statsLiked').textContent = appData.liked.length;
+            document.getElementById('statsTime').textContent = Math.floor((Date.now() - appData.startTime) / 60000);
             
             // Обновляем избранное
             updateFavorites();
         }
         
-        // Навигация
+        // Анимированная навигация
         function nextPhoto() {
-            showSwipeIndicator('right');
-            currentPhotoIndex = (currentPhotoIndex + 1) % photos.length;
-            appData.viewed++;
-            updateDisplay();
-            saveData();
+            animateSlide('right', () => {
+                currentPhotoIndex = (currentPhotoIndex + 1) % photos.length;
+                appData.viewed++;
+                updateDisplay();
+                saveData();
+            });
         }
         
         function previousPhoto() {
-            showSwipeIndicator('left');
-            currentPhotoIndex = (currentPhotoIndex - 1 + photos.length) % photos.length;
-            appData.viewed++;
-            updateDisplay();
-            saveData();
+            animateSlide('left', () => {
+                currentPhotoIndex = (currentPhotoIndex - 1 + photos.length) % photos.length;
+                appData.viewed++;
+                updateDisplay();
+                saveData();
+            });
+        }
+        
+        // Анимация перехода
+        function animateSlide(direction, callback) {
+            const slide = document.getElementById('currentSlide');
+            
+            if (direction === 'right') {
+                slide.classList.add('slide-right');
+            } else {
+                slide.classList.add('slide-left');
+            }
+            
+            setTimeout(() => {
+                slide.classList.remove('slide-right', 'slide-left');
+                callback();
+            }, 400);
         }
         
         // Лайк
@@ -385,6 +612,11 @@
                 if (!appData.liked.includes(photo.id)) {
                     appData.liked.push(photo.id);
                 }
+                // Анимация лайка
+                document.getElementById('photoTitle').style.transform = 'scale(1.3)';
+                setTimeout(() => {
+                    document.getElementById('photoTitle').style.transform = 'scale(1)';
+                }, 300);
             } else {
                 appData.liked = appData.liked.filter(id => id !== photo.id);
             }
@@ -399,19 +631,29 @@
             const likedPhotos = photos.filter(photo => photo.liked);
             
             if (likedPhotos.length === 0) {
-                grid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px; opacity: 0.7;">Нет избранных фото</div>';
+                grid.innerHTML = '<div class="empty-favorites">Нет избранных фото<br><small>Ставьте ❤️ чтобы добавить</small></div>';
             } else {
                 grid.innerHTML = likedPhotos.map(photo => `
-                    <div class="favorite-item">
+                    <div class="favorite-item" onclick="openFavorite(${photo.id})">
                         ${photo.title}<br>
-                        <small>❤️</small>
+                        <small style="font-size: 24px;">❤️</small>
                     </div>
                 `).join('');
             }
         }
         
-        // Управление вкладками
-        function showTab(tabName) {
+        // Открытие избранного фото
+        function openFavorite(photoId) {
+            const index = photos.findIndex(photo => photo.id === photoId);
+            if (index !== -1) {
+                currentPhotoIndex = index;
+                showScreen('homeScreen');
+                updateDisplay();
+            }
+        }
+        
+        // Управление экранами
+        function showScreen(screenId) {
             // Скрываем все экраны
             document.querySelectorAll('.screen').forEach(screen => {
                 screen.classList.remove('active');
@@ -423,24 +665,30 @@
             });
             
             // Показываем нужный экран
-            document.getElementById(tabName + 'Screen').classList.add('active');
+            document.getElementById(screenId).classList.add('active');
             
             // Активируем кнопку
             event.currentTarget.classList.add('active');
+            
+            // Обновляем данные при переходе на экраны
+            if (screenId === 'favoritesScreen') {
+                updateFavorites();
+            } else if (screenId === 'settingsScreen') {
+                updateSettingsDisplay();
+            }
         }
         
         // Жесты и свайпы
         function setupGestures() {
             let startX, startY;
-            const container = document.getElementById('photoContainer');
-            const swipeThreshold = 50;
+            const viewport = document.querySelector('.photo-viewport');
             
-            container.addEventListener('touchstart', e => {
+            viewport.addEventListener('touchstart', e => {
                 startX = e.touches[0].clientX;
                 startY = e.touches[0].clientY;
             });
             
-            container.addEventListener('touchend', e => {
+            viewport.addEventListener('touchend', e => {
                 if (!startX || !startY) return;
                 
                 const endX = e.changedTouches[0].clientX;
@@ -453,7 +701,7 @@
                 startX = startY = null;
                 
                 // Проверяем диагональные жесты
-                if (Math.abs(diffX) > swipeThreshold && Math.abs(diffY) > swipeThreshold) {
+                if (Math.abs(diffX) > 50 && Math.abs(diffY) > 50) {
                     if (diffX > 0 && diffY < 0) {
                         // ↗️ Следующее фото
                         nextPhoto();
@@ -467,7 +715,7 @@
                 }
                 
                 // Простые горизонтальные свайпы
-                if (Math.abs(diffX) > swipeThreshold && Math.abs(diffY) < swipeThreshold) {
+                if (Math.abs(diffX) > 50 && Math.abs(diffY) < 30) {
                     if (diffX > 0) {
                         previousPhoto(); // 👈 Свайп вправо = назад
                     } else {
@@ -475,40 +723,84 @@
                     }
                 }
                 
-                // Долгое нажатие для лайка
-                if (Math.abs(diffX) < 20 && Math.abs(diffY) < 20) {
+                // Короткое нажатие для лайка
+                if (Math.abs(diffX) < 10 && Math.abs(diffY) < 10) {
                     toggleLike();
                 }
             });
         }
         
-        // Анимация свайпа
-        function showSwipeIndicator(direction) {
-            const indicator = document.querySelector(`.swipe-${direction}`);
-            indicator.style.opacity = '1';
-            setTimeout(() => {
-                indicator.style.opacity = '0';
-            }, 300);
-        }
-        
-        // Настройки
+        // НАСТРОЙКИ - ВСЕ КНОПКИ РАБОТАЮТ
         function toggleHints() {
             appData.showHints = !appData.showHints;
-            const hints = document.querySelector('.gesture-overlay');
-            hints.style.display = appData.showHints ? 'block' : 'none';
-            event.target.textContent = appData.showHints ? 'ВКЛЮЧЕНО' : 'ВЫКЛЮЧЕНО';
+            const overlay = document.getElementById('gestureOverlay');
+            const btn = document.getElementById('hintsToggle');
+            
+            overlay.style.display = appData.showHints ? 'block' : 'none';
+            btn.textContent = appData.showHints ? 'ВКЛ' : 'ВЫКЛ';
+            btn.classList.toggle('off', !appData.showHints);
+            
             saveData();
         }
         
+        function toggleTheme() {
+            appData.darkTheme = !appData.darkTheme;
+            const btn = document.getElementById('themeToggle');
+            
+            if (appData.darkTheme) {
+                document.body.style.background = '#000';
+                btn.textContent = 'ТЁМНАЯ';
+            } else {
+                document.body.style.background = '#f0f0f0';
+                document.body.style.color = '#000';
+                btn.textContent = 'СВЕТЛАЯ';
+            }
+            
+            saveData();
+        }
+        
+        function exportData() {
+            const dataStr = JSON.stringify(appData, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            link.download = 'flashback-data.json';
+            link.click();
+            
+            alert('✅ Данные экспортированы!');
+        }
+        
         function clearData() {
-            if (confirm('Очистить все данные?')) {
+            if (confirm('❌ Очистить ВСЕ данные?\nЭто действие нельзя отменить!')) {
                 localStorage.removeItem('flashbackApp');
+                alert('Данные очищены! Приложение перезагрузится.');
                 location.reload();
             }
         }
         
+        function resetTutorial() {
+            appData.tutorialCompleted = false;
+            appData.viewed = 0;
+            saveData();
+            alert('✅ Обучение сброшено! Первый запуск будет показан снова.');
+        }
+        
+        function updateSettingsButtons() {
+            document.getElementById('hintsToggle').textContent = appData.showHints ? 'ВКЛ' : 'ВЫКЛ';
+            document.getElementById('hintsToggle').classList.toggle('off', !appData.showHints);
+            document.getElementById('themeToggle').textContent = appData.darkTheme ? 'ТЁМНАЯ' : 'СВЕТЛАЯ';
+        }
+        
+        function updateSettingsDisplay() {
+            document.getElementById('statsTime').textContent = Math.floor((Date.now() - appData.startTime) / 60000);
+        }
+        
         // Запуск приложения
         document.addEventListener('DOMContentLoaded', init);
+        
+        // Сохраняем данные при закрытии
+        window.addEventListener('beforeunload', saveData);
     </script>
 </body>
 </html>
