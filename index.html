@@ -18,6 +18,15 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        body.light-theme {
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+        }
+
+        body.dark-theme {
+            background: linear-gradient(135deg, #2d3436 0%, #000000 100%);
         }
 
         .gallery-container {
@@ -28,6 +37,7 @@
             overflow: hidden;
             border-radius: 20px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            touch-action: pan-y pinch-zoom;
         }
 
         .photo-slide {
@@ -38,6 +48,8 @@
             height: 100%;
             object-fit: cover;
             opacity: 0;
+            user-select: none;
+            -webkit-user-select: none;
         }
 
         .photo-slide.active {
@@ -82,41 +94,13 @@
         }
 
         .photo-slide.forward {
-            animation: slideForward 0.8s ease-in-out;
+            animation: slideForward 0.6s ease-in-out;
             z-index: 3;
         }
 
         .photo-slide.backward {
-            animation: slideBackward 0.8s ease-in-out;
+            animation: slideBackward 0.6s ease-in-out;
             z-index: 3;
-        }
-
-        .controls {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 4;
-            display: flex;
-            gap: 20px;
-        }
-
-        .btn {
-            background: rgba(255,255,255,0.9);
-            border: none;
-            padding: 15px 25px;
-            border-radius: 50px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-
-        .btn:hover {
-            background: white;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
         }
 
         .counter {
@@ -130,10 +114,53 @@
             font-size: 14px;
             z-index: 4;
         }
+
+        .theme-switcher {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 4;
+        }
+
+        .theme-btn {
+            background: rgba(255,255,255,0.9);
+            border: none;
+            padding: 10px 15px;
+            border-radius: 50px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .theme-btn:hover {
+            background: white;
+            transform: scale(1.05);
+        }
+
+        .swipe-hint {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 14px;
+            text-align: center;
+            background: rgba(0,0,0,0.5);
+            padding: 10px 20px;
+            border-radius: 20px;
+            z-index: 4;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
     </style>
 </head>
-<body>
-    <div class="gallery-container">
+<body class="light-theme">
+    <div class="gallery-container" id="gallery">
         <!-- Добавьте ваши фото сюда -->
         <img src="photo1.jpg" class="photo-slide active" alt="Photo 1">
         <img src="photo2.jpg" class="photo-slide" alt="Photo 2">
@@ -142,35 +169,101 @@
         
         <div class="counter">1 / 4</div>
         
-        <div class="controls">
-            <button class="btn prev-btn">← Назад</button>
-            <button class="btn next-btn">Вперед →</button>
+        <div class="theme-switcher">
+            <button class="theme-btn" onclick="switchTheme()">Тема</button>
         </div>
+
+        <div class="swipe-hint">Свайпайте влево/вправо</div>
     </div>
 
     <script>
         const photos = document.querySelectorAll('.photo-slide');
-        const prevBtn = document.querySelector('.prev-btn');
-        const nextBtn = document.querySelector('.next-btn');
         const counter = document.querySelector('.counter');
+        const gallery = document.getElementById('gallery');
+        const body = document.body;
         
         let currentPhoto = 0;
         const totalPhotos = photos.length;
+        let startX = 0;
+        let startY = 0;
+        let currentX = 0;
+        let currentY = 0;
+        let isSwiping = false;
+
+        // Свайпы для телефона
+        gallery.addEventListener('touchstart', (e) => {
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+            isSwiping = true;
+        });
+
+        gallery.addEventListener('touchmove', (e) => {
+            if (!isSwiping) return;
+            currentX = e.touches[0].clientX;
+            currentY = e.touches[0].clientY;
+        });
+
+        gallery.addEventListener('touchend', (e) => {
+            if (!isSwiping) return;
+            
+            const diffX = currentX - startX;
+            const diffY = currentY - startY;
+            
+            // Проверяем, что это горизонтальный свайп (а не вертикальный)
+            if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
+                if (diffX > 0) {
+                    // Свайп вправо - предыдущее фото
+                    prevPhoto();
+                } else {
+                    // Свайп влево - следующее фото
+                    nextPhoto();
+                }
+            }
+            
+            isSwiping = false;
+        });
+
+        // Свайпы для компьютера (мышь)
+        gallery.addEventListener('mousedown', (e) => {
+            startX = e.clientX;
+            startY = e.clientY;
+            isSwiping = true;
+        });
+
+        gallery.addEventListener('mousemove', (e) => {
+            if (!isSwiping) return;
+            currentX = e.clientX;
+            currentY = e.clientY;
+        });
+
+        gallery.addEventListener('mouseup', (e) => {
+            if (!isSwiping) return;
+            
+            const diffX = currentX - startX;
+            const diffY = currentY - startY;
+            
+            if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
+                if (diffX > 0) {
+                    prevPhoto();
+                } else {
+                    nextPhoto();
+                }
+            }
+            
+            isSwiping = false;
+        });
 
         function updateCounter() {
             counter.textContent = `${currentPhoto + 1} / ${totalPhotos}`;
         }
 
         function showPhoto(index, direction) {
-            // Скрываем все фото
             photos.forEach(photo => {
                 photo.classList.remove('active', 'forward', 'backward');
             });
             
-            // Показываем текущее фото
             photos[index].classList.add('active');
             
-            // Добавляем анимацию для предыдущего фото
             if (direction === 'forward') {
                 photos[currentPhoto].classList.add('forward');
             } else if (direction === 'backward') {
@@ -191,18 +284,22 @@
             showPhoto(prevIndex, 'backward');
         }
 
-        // Обработчики событий
-        nextBtn.addEventListener('click', nextPhoto);
-        prevBtn.addEventListener('click', prevPhoto);
+        function switchTheme() {
+            if (body.classList.contains('light-theme')) {
+                body.classList.remove('light-theme');
+                body.classList.add('dark-theme');
+            } else if (body.classList.contains('dark-theme')) {
+                body.classList.remove('dark-theme');
+            } else {
+                body.classList.add('light-theme');
+            }
+        }
 
-        // Стрелки клавиатуры
+        // Стрелки клавиатуры все еще работают
         document.addEventListener('keydown', (e) => {
             if (e.key === 'ArrowRight') nextPhoto();
             if (e.key === 'ArrowLeft') prevPhoto();
         });
-
-        // Автопереход (опционально)
-        // setInterval(nextPhoto, 5000);
     </script>
 </body>
 </html>
