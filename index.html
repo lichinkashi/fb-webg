@@ -16,12 +16,18 @@
         }
         
         body { 
-            background: #111; 
+            background: #000; 
             color: #fff; 
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             height: 100vh;
             overflow: hidden;
             touch-action: pan-y;
+            transition: all 0.3s ease;
+        }
+        
+        body.light-theme {
+            background: #fff;
+            color: #333;
         }
         
         .app {
@@ -39,6 +45,11 @@
             z-index: 100;
             color: #fff;
             text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
+        
+        .light-theme .status-bar {
+            background: rgba(139, 0, 0, 0.9);
+            color: #fff;
         }
         
         .main-content {
@@ -71,7 +82,7 @@
             justify-content: center;
             align-items: center;
             position: relative;
-            background: #000;
+            background: transparent;
         }
         
         .photo-viewport {
@@ -94,8 +105,17 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             box-shadow: 0 10px 30px rgba(139, 0, 0, 0.3);
+            touch-action: none;
+        }
+        
+        .light-theme .photo-slide {
+            box-shadow: 0 10px 30px rgba(139, 0, 0, 0.2);
+        }
+        
+        .photo-slide.dragging {
+            transition: none;
         }
         
         .photo-slide.current {
@@ -105,32 +125,19 @@
         }
         
         .photo-slide.leaving-next {
-            animation: slideOutNext 0.3s forwards;
+            animation: slideOutNext 0.5s forwards;
         }
         
         .photo-slide.entering-next {
-            animation: slideInNext 0.3s forwards;
+            animation: slideInNext 0.5s forwards;
         }
         
         .photo-slide.leaving-prev {
-            animation: slideOutPrev 0.3s forwards;
+            animation: slideOutPrev 0.5s forwards;
         }
         
         .photo-slide.entering-prev {
-            animation: slideInPrev 0.3s forwards;
-        }
-        
-        /* РЕЖИМ ЛЕНТЫ */
-        .feed-mode .photo-slide {
-            transition: all 0.25s ease;
-        }
-        
-        .feed-mode .photo-slide.leaving-next {
-            animation: feedSlideOut 0.25s forwards;
-        }
-        
-        .feed-mode .photo-slide.entering-next {
-            animation: feedSlideIn 0.25s forwards;
+            animation: slideInPrev 0.5s forwards;
         }
         
         @keyframes slideOutNext {
@@ -139,14 +146,14 @@
                 opacity: 1;
             }
             100% {
-                transform: translate(50%, -50%) scale(0.3) rotate(15deg);
+                transform: translate(50%, -150%) scale(0.3) rotate(15deg);
                 opacity: 0;
             }
         }
         
         @keyframes slideInNext {
             0% {
-                transform: translate(-150%, 50%) scale(0.3) rotate(-15deg);
+                transform: translate(150%, -150%) scale(0.3) rotate(-15deg);
                 opacity: 0;
             }
             100% {
@@ -168,29 +175,7 @@
         
         @keyframes slideInPrev {
             0% {
-                transform: translate(50%, -50%) scale(0.3) rotate(15deg);
-                opacity: 0;
-            }
-            100% {
-                transform: translate(-50%, -50%) scale(1);
-                opacity: 1;
-            }
-        }
-        
-        @keyframes feedSlideOut {
-            0% {
-                transform: translate(-50%, -50%) scale(1);
-                opacity: 1;
-            }
-            100% {
-                transform: translate(-50%, -100%) scale(0.8);
-                opacity: 0;
-            }
-        }
-        
-        @keyframes feedSlideIn {
-            0% {
-                transform: translate(-50%, 100%) scale(0.8);
+                transform: translate(-150%, 50%) scale(0.3) rotate(15deg);
                 opacity: 0;
             }
             100% {
@@ -206,6 +191,10 @@
             transition: transform 0.3s;
             color: #fff;
             text-shadow: 0 2px 4px rgba(0,0,0,0.7);
+        }
+        
+        .light-theme .photo-content {
+            color: #fff;
         }
         
         .photo-subtitle {
@@ -232,6 +221,11 @@
             transition: all 0.3s ease;
             color: #fff;
             border: 1px solid #333;
+        }
+        
+        .light-theme .photo-info {
+            background: rgba(0, 0, 0, 0.8);
+            color: #fff;
         }
         
         .photo-info.visible {
@@ -305,6 +299,11 @@
             border: 1px solid #333;
         }
         
+        .light-theme .double-tap-hint {
+            background: rgba(0, 0, 0, 0.9);
+            color: #fff;
+        }
+        
         .double-tap-hint.show {
             opacity: 1;
         }
@@ -313,13 +312,17 @@
         .favorites-screen {
             padding: 20px;
             overflow-y: auto;
-            background: #111;
+            background: transparent;
+        }
+        
+        .light-theme .favorites-screen {
+            background: #fff;
         }
         
         .favorites-header {
             text-align: center;
             margin-bottom: 20px;
-            color: #fff;
+            color: inherit;
         }
         
         .favorites-grid {
@@ -348,20 +351,84 @@
             padding: 40px;
             opacity: 0.7;
             font-size: 18px;
-            color: #fff;
+            color: inherit;
+        }
+        
+        /* ЭКРАН ПОИСКА */
+        .search-screen {
+            padding: 20px;
+            overflow-y: auto;
+            background: transparent;
+        }
+        
+        .light-theme .search-screen {
+            background: #fff;
+        }
+        
+        .search-header {
+            text-align: center;
+            margin-bottom: 20px;
+            color: inherit;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #8B0000;
+            border-radius: 25px;
+            background: rgba(139, 0, 0, 0.1);
+            color: inherit;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .light-theme .search-input {
+            background: rgba(139, 0, 0, 0.05);
+            color: #333;
+        }
+        
+        .search-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .search-tag {
+            background: rgba(139, 0, 0, 0.2);
+            padding: 10px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background 0.3s;
+            color: inherit;
+        }
+        
+        .search-tag.active {
+            background: #8B0000;
+            color: white;
+        }
+        
+        .search-results {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
         }
         
         /* ЭКРАН НАСТРОЕК */
         .settings-screen {
             padding: 20px;
             overflow-y: auto;
-            background: #111;
+            background: transparent;
+        }
+        
+        .light-theme .settings-screen {
+            background: #fff;
         }
         
         .settings-header {
             text-align: center;
             margin-bottom: 20px;
-            color: #fff;
+            color: inherit;
         }
         
         .settings-list {
@@ -370,7 +437,7 @@
         }
         
         .settings-item {
-            background: #1a1a1a;
+            background: rgba(26, 26, 26, 0.8);
             border-radius: 15px;
             padding: 20px;
             margin: 15px 0;
@@ -380,6 +447,12 @@
             border: 1px solid #333;
         }
         
+        .light-theme .settings-item {
+            background: rgba(245, 245, 245, 0.8);
+            border: 1px solid #ddd;
+            color: #333;
+        }
+        
         .setting-info {
             flex: 1;
         }
@@ -387,13 +460,13 @@
         .setting-title {
             font-size: 18px;
             margin-bottom: 5px;
-            color: #fff;
+            color: inherit;
         }
         
         .setting-description {
             font-size: 14px;
             opacity: 0.8;
-            color: #ccc;
+            color: inherit;
         }
         
         .toggle-btn {
@@ -430,28 +503,39 @@
         }
         
         .settings-section {
-            background: #1a1a1a;
+            background: rgba(26, 26, 26, 0.8);
             border-radius: 15px;
             padding: 15px;
             margin: 10px 0;
             border: 1px solid #333;
         }
         
+        .light-theme .settings-section {
+            background: rgba(245, 245, 245, 0.8);
+            border: 1px solid #ddd;
+            color: #333;
+        }
+        
         .settings-section-title {
             font-size: 16px;
             font-weight: bold;
             margin-bottom: 10px;
-            color: #fff;
+            color: inherit;
         }
         
         /* НИЖНЕЕ МЕНЮ */
         .bottom-tabs {
             display: flex;
-            background: #1a1a1a;
+            background: rgba(26, 26, 26, 0.95);
             border-top: 1px solid #333;
             height: 70px;
             position: relative;
             z-index: 100;
+        }
+        
+        .light-theme .bottom-tabs {
+            background: rgba(255, 255, 255, 0.95);
+            border-top: 1px solid #ddd;
         }
         
         .tab {
@@ -469,7 +553,15 @@
             padding: 10px 5px;
         }
         
+        .light-theme .tab {
+            color: #666;
+        }
+        
         .tab.active {
+            color: #8B0000;
+        }
+        
+        .light-theme .tab.active {
             color: #8B0000;
         }
         
@@ -484,7 +576,7 @@
         }
     </style>
 </head>
-<body>
+<body class="dark-theme">
     <div class="app">
         <!-- Верхняя панель -->
         <div class="status-bar" id="statusBar">
@@ -518,6 +610,31 @@
                     
                     <div class="like-animation" id="likeAnimation">❤️</div>
                     <div class="double-tap-hint" id="doubleTapHint">Двойной тап для избранного ❤️</div>
+                </div>
+            </div>
+            
+            <!-- ЭКРАН ПОИСКА -->
+            <div class="screen" id="searchScreen">
+                <div class="search-screen">
+                    <div class="search-header">
+                        <h2>🔍 Поиск</h2>
+                        <p>Найдите фото по тегам и датам</p>
+                    </div>
+                    
+                    <input type="text" class="search-input" id="searchInput" placeholder="Введите тег или дату...">
+                    
+                    <div class="search-tags" id="searchTags">
+                        <div class="search-tag active" onclick="filterByTag('все')">Все</div>
+                        <div class="search-tag" onclick="filterByTag('отпуск')">🏖️ Отпуск</div>
+                        <div class="search-tag" onclick="filterByTag('семья')">👨‍👩‍👧‍👦 Семья</div>
+                        <div class="search-tag" onclick="filterByTag('путешествие')">✈️ Путешествие</div>
+                        <div class="search-tag" onclick="filterByTag('город')">🏙️ Город</div>
+                        <div class="search-tag" onclick="filterByTag('природа')">🌲 Природа</div>
+                    </div>
+                    
+                    <div class="search-results" id="searchResults">
+                        <!-- Результаты поиска появятся здесь -->
+                    </div>
                 </div>
             </div>
             
@@ -619,6 +736,10 @@
                 <div class="tab-icon">📸</div>
                 <div>Главная</div>
             </button>
+            <button class="tab" onclick="showScreen('searchScreen')">
+                <div class="tab-icon">🔍</div>
+                <div>Поиск</div>
+            </button>
             <button class="tab" onclick="showScreen('favoritesScreen')">
                 <div class="tab-icon">❤️</div>
                 <div>Избранное</div>
@@ -639,7 +760,8 @@
                 liked: false,
                 date: "15 июня 2023",
                 location: "Бали, Индонезия",
-                camera: "f/2.8 • 1/500s • ISO 100"
+                camera: "f/2.8 • 1/500s • ISO 100",
+                tags: ["отпуск", "пляж", "море"]
             },
             { 
                 id: 2, 
@@ -647,7 +769,8 @@
                 liked: false,
                 date: "22 июля 2023", 
                 location: "Альпы, Швейцария",
-                camera: "f/4.0 • 1/250s • ISO 200"
+                camera: "f/4.0 • 1/250s • ISO 200",
+                tags: ["природа", "горы", "поход"]
             },
             { 
                 id: 3, 
@@ -655,7 +778,8 @@
                 liked: false,
                 date: "5 августа 2023",
                 location: "Токио, Япония", 
-                camera: "f/1.8 • 1/30s • ISO 800"
+                camera: "f/1.8 • 1/30s • ISO 800",
+                tags: ["город", "ночь", "неон"]
             },
             { 
                 id: 4, 
@@ -663,7 +787,8 @@
                 liked: false,
                 date: "12 сентября 2023",
                 location: "Париж, Франция",
-                camera: "f/2.2 • 1/60s • ISO 400" 
+                camera: "f/2.2 • 1/60s • ISO 400",
+                tags: ["семья", "ужин", "ресторан"]
             },
             { 
                 id: 5, 
@@ -671,7 +796,8 @@
                 liked: false,
                 date: "28 октября 2023",
                 location: "Нью-Йорк, США",
-                camera: "f/5.6 • 1/125s • ISO 100"
+                camera: "f/5.6 • 1/125s • ISO 100",
+                tags: ["путешествие", "город", "достопримечательности"]
             }
         ];
         
@@ -682,7 +808,7 @@
             showHints: true,
             showPhotos: true,
             darkTheme: true,
-            navMode: 'diagonal', // 'diagonal' или 'feed'
+            navMode: 'diagonal',
             fastAnimations: true,
             startTime: Date.now(),
             tutorialCompleted: false
@@ -690,14 +816,20 @@
         
         let lastTap = 0;
         let infoVisible = false;
+        let isDragging = false;
+        let dragStartX = 0;
+        let dragStartY = 0;
+        let currentSearchTag = 'все';
 
         // Инициализация
         function init() {
             loadData();
             updateDisplay();
             setupGestures();
+            setupDragAndDrop();
             updateSettingsButtons();
-            applyNavMode();
+            applyTheme();
+            updateSearchResults();
         }
         
         // Загрузка данных
@@ -720,6 +852,15 @@
             appData.usageTime = timeUsed;
             
             localStorage.setItem('flashbackApp', JSON.stringify(appData));
+        }
+        
+        // Применение темы
+        function applyTheme() {
+            if (appData.darkTheme) {
+                document.body.className = 'dark-theme';
+            } else {
+                document.body.className = 'light-theme';
+            }
         }
         
         // Обновление интерфейса
@@ -749,8 +890,8 @@
                     '↗️ Следующее • ↙️ Предыдущее • 👆👆 Избранное';
             } else {
                 return appData.showPhotos ? 
-                    '⬆️ Следующее • ⬇️ Предыдущее • 👆👆 Избранное' : 
-                    '⬆️ Следующее • ⬇️ Предыдущее • 👆👆 Избранное';
+                    '⬆️ Следующее • 👆👆 Избранное' : 
+                    '⬆️ Следующее • 👆👆 Избранное';
             }
         }
         
@@ -775,9 +916,9 @@
                 setTimeout(() => {
                     currentSlide.classList.remove('entering-next');
                     currentSlide.classList.add('current');
-                }, appData.fastAnimations ? 250 : 500);
+                }, appData.fastAnimations ? 300 : 500);
                 
-            }, appData.fastAnimations ? 250 : 500);
+            }, appData.fastAnimations ? 300 : 500);
         }
         
         function previousPhoto() {
@@ -785,7 +926,6 @@
             const isFeedMode = appData.navMode === 'feed';
             
             if (isFeedMode) {
-                // В режиме ленты только вперед
                 return;
             }
             
@@ -805,9 +945,70 @@
                 setTimeout(() => {
                     currentSlide.classList.remove('entering-prev');
                     currentSlide.classList.add('current');
-                }, appData.fastAnimations ? 250 : 500);
+                }, appData.fastAnimations ? 300 : 500);
                 
-            }, appData.fastAnimations ? 250 : 500);
+            }, appData.fastAnimations ? 300 : 500);
+        }
+        
+        // Drag and Drop для фото
+        function setupDragAndDrop() {
+            const slide = document.getElementById('currentSlide');
+            
+            slide.addEventListener('touchstart', (e) => {
+                isDragging = true;
+                dragStartX = e.touches[0].clientX;
+                dragStartY = e.touches[0].clientY;
+                slide.classList.add('dragging');
+            });
+            
+            slide.addEventListener('touchmove', (e) => {
+                if (!isDragging) return;
+                
+                const currentX = e.touches[0].clientX;
+                const currentY = e.touches[0].clientY;
+                
+                const deltaX = currentX - dragStartX;
+                const deltaY = currentY - dragStartY;
+                
+                // Плавное перемещение фото за пальцем
+                const scale = Math.max(0.7, 1 - Math.sqrt(deltaX * deltaX + deltaY * deltaY) / 500);
+                const rotate = deltaX * 0.1;
+                
+                slide.style.transform = `translate(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px)) scale(${scale}) rotate(${rotate}deg)`;
+            });
+            
+            slide.addEventListener('touchend', (e) => {
+                if (!isDragging) return;
+                
+                isDragging = false;
+                slide.classList.remove('dragging');
+                
+                const endX = e.changedTouches[0].clientX;
+                const endY = e.changedTouches[0].clientY;
+                
+                const deltaX = endX - dragStartX;
+                const deltaY = endY - dragStartY;
+                
+                // Определяем направление свайпа
+                if (Math.abs(deltaX) > 80 || Math.abs(deltaY) > 80) {
+                    if (appData.navMode === 'diagonal') {
+                        if (deltaX > 0 && deltaY < 0) {
+                            nextPhoto();
+                        } else if (deltaX < 0 && deltaY > 0) {
+                            previousPhoto();
+                        }
+                    } else {
+                        if (deltaY < -80) {
+                            nextPhoto();
+                        }
+                    }
+                }
+                
+                // Возвращаем фото на место
+                setTimeout(() => {
+                    slide.style.transform = '';
+                }, 300);
+            });
         }
         
         // Двойной тап для лайка
@@ -860,6 +1061,42 @@
             info.classList.toggle('visible', infoVisible);
         }
         
+        // Поиск и фильтрация
+        function filterByTag(tag) {
+            currentSearchTag = tag;
+            
+            // Обновляем активные теги
+            document.querySelectorAll('.search-tag').forEach(tagEl => {
+                tagEl.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            updateSearchResults();
+        }
+        
+        function updateSearchResults() {
+            const resultsContainer = document.getElementById('searchResults');
+            let filteredPhotos = photos;
+            
+            if (currentSearchTag !== 'все') {
+                filteredPhotos = photos.filter(photo => 
+                    photo.tags.includes(currentSearchTag)
+                );
+            }
+            
+            if (filteredPhotos.length === 0) {
+                resultsContainer.innerHTML = '<div class="empty-favorites">Фото не найдены<br><small>Попробуйте другой тег</small></div>';
+            } else {
+                resultsContainer.innerHTML = filteredPhotos.map(photo => `
+                    <div class="favorite-item" onclick="openFavorite(${photo.id})">
+                        ${photo.title}<br>
+                        <small>${photo.date}</small><br>
+                        <small style="font-size: 14px; opacity: 0.7;">${photo.tags.join(', ')}</small>
+                    </div>
+                `).join('');
+            }
+        }
+        
         // Обновление избранного
         function updateFavorites() {
             const grid = document.getElementById('favoritesGrid');
@@ -904,6 +1141,8 @@
                 updateFavorites();
             } else if (screenId === 'settingsScreen') {
                 updateSettingsDisplay();
+            } else if (screenId === 'searchScreen') {
+                updateSearchResults();
             }
         }
         
@@ -919,7 +1158,7 @@
             });
             
             viewport.addEventListener('touchend', e => {
-                if (!startX || !startY) return;
+                if (!startX || !startY || isDragging) return;
                 
                 const endX = e.changedTouches[0].clientX;
                 const endY = e.changedTouches[0].clientY;
@@ -930,8 +1169,7 @@
                 startX = startY = null;
                 
                 if (appData.navMode === 'diagonal') {
-                    // Диагональные жесты
-                    if (Math.abs(diffX) > 40 && Math.abs(diffY) > 40) {
+                    if (Math.abs(diffX) > 60 && Math.abs(diffY) > 60) {
                         if (diffX > 0 && diffY < 0) {
                             nextPhoto();
                             return;
@@ -942,23 +1180,20 @@
                         }
                     }
                 } else {
-                    // Режим ленты (как в Instagram)
-                    if (Math.abs(diffY) > 60 && Math.abs(diffX) < 50) {
+                    if (Math.abs(diffY) > 80 && Math.abs(diffX) < 50) {
                         if (diffY < 0) {
-                            nextPhoto(); // Свайп вверх = следующее
+                            nextPhoto();
                             return;
                         }
                     }
                 }
                 
-                // Вертикальный жест вверх для информации
-                if (diffY < -80 && Math.abs(diffX) < 50) {
+                if (diffY < -100 && Math.abs(diffX) < 50) {
                     togglePhotoInfo();
                     return;
                 }
                 
-                // Вертикальный жест вниз скрывает информацию
-                if (diffY > 80 && Math.abs(diffX) < 50 && infoVisible) {
+                if (diffY > 100 && Math.abs(diffX) < 50 && infoVisible) {
                     togglePhotoInfo();
                     return;
                 }
@@ -989,24 +1224,24 @@
             saveData();
         }
         
+        function toggleTheme() {
+            appData.darkTheme = !appData.darkTheme;
+            const btn = document.getElementById('themeToggle');
+            
+            btn.textContent = appData.darkTheme ? 'ТЁМНАЯ' : 'СВЕТЛАЯ';
+            
+            applyTheme();
+            saveData();
+        }
+        
         function toggleNavMode() {
             appData.navMode = appData.navMode === 'diagonal' ? 'feed' : 'diagonal';
             const btn = document.getElementById('navModeToggle');
             
             btn.textContent = appData.navMode === 'diagonal' ? 'ДИАГОНАЛЬ' : 'ЛЕНТА';
             
-            applyNavMode();
             updateDisplay();
             saveData();
-        }
-        
-        function applyNavMode() {
-            const mainContent = document.getElementById('mainContent');
-            if (appData.navMode === 'feed') {
-                mainContent.classList.add('feed-mode');
-            } else {
-                mainContent.classList.remove('feed-mode');
-            }
         }
         
         function toggleSpeed() {
@@ -1014,23 +1249,6 @@
             const btn = document.getElementById('speedToggle');
             
             btn.textContent = appData.fastAnimations ? 'БЫСТРАЯ' : 'ПЛАВНАЯ';
-            
-            saveData();
-        }
-        
-        function toggleTheme() {
-            appData.darkTheme = !appData.darkTheme;
-            const btn = document.getElementById('themeToggle');
-            
-            if (appData.darkTheme) {
-                document.body.style.background = '#111';
-                document.body.style.color = '#fff';
-                btn.textContent = 'ТЁМНАЯ';
-            } else {
-                document.body.style.background = '#f5f5f5';
-                document.body.style.color = '#333';
-                btn.textContent = 'СВЕТЛАЯ';
-            }
             
             saveData();
         }
