@@ -105,7 +105,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             box-shadow: 0 10px 30px rgba(139, 0, 0, 0.3);
             touch-action: none;
         }
@@ -115,7 +115,7 @@
         }
         
         .photo-slide.dragging {
-            transition: none;
+            transition: transform 0.1s ease;
         }
         
         .photo-slide.current {
@@ -140,6 +140,7 @@
             animation: slideInPrev 0.5s forwards;
         }
         
+        /* АНИМАЦИИ ДЛЯ РЕЖИМА ДИАГОНАЛИ */
         @keyframes slideOutNext {
             0% {
                 transform: translate(-50%, -50%) scale(1);
@@ -176,6 +177,37 @@
         @keyframes slideInPrev {
             0% {
                 transform: translate(-150%, 50%) scale(0.3) rotate(15deg);
+                opacity: 0;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+        }
+        
+        /* АНИМАЦИИ ДЛЯ РЕЖИМА ЛЕНТЫ */
+        .feed-mode .photo-slide.leaving-next {
+            animation: feedSlideOut 0.5s forwards;
+        }
+        
+        .feed-mode .photo-slide.entering-next {
+            animation: feedSlideIn 0.5s forwards;
+        }
+        
+        @keyframes feedSlideOut {
+            0% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, -100%) scale(0.8);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes feedSlideIn {
+            0% {
+                transform: translate(-50%, 100%) scale(0.8);
                 opacity: 0;
             }
             100% {
@@ -245,15 +277,47 @@
         
         .gesture-hint {
             position: absolute;
-            font-size: 32px;
+            font-size: 24px;
             opacity: 0.4;
             animation: pulse 2s infinite;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* НОВЫЙ ДИЗАЙН СТРЕЛОК */
+        .hint-next::before {
+            content: "→";
+            transform: rotate(-45deg);
+            display: block;
+        }
+        
+        .hint-prev::before {
+            content: "←";
+            transform: rotate(45deg);
+            display: block;
+        }
+        
+        .hint-info::before {
+            content: "i";
+            font-style: italic;
+            font-weight: bold;
+            display: block;
+        }
+        
+        .hint-like::before {
+            content: "♥";
+            display: block;
         }
         
         @keyframes pulse {
-            0% { opacity: 0.2; }
-            50% { opacity: 0.6; }
-            100% { opacity: 0.2; }
+            0% { opacity: 0.2; transform: scale(0.9); }
+            50% { opacity: 0.6; transform: scale(1.1); }
+            100% { opacity: 0.2; transform: scale(0.9); }
         }
         
         .hint-next { bottom: 30px; left: 30px; }
@@ -523,7 +587,7 @@
             color: inherit;
         }
         
-        /* НИЖНЕЕ МЕНЮ */
+        /* НИЖНЕЕ МЕНЮ С ПЛАВНЫМ ВЫБОРОМ */
         .bottom-tabs {
             display: flex;
             background: rgba(26, 26, 26, 0.95);
@@ -531,6 +595,7 @@
             height: 70px;
             position: relative;
             z-index: 100;
+            overflow: hidden;
         }
         
         .light-theme .bottom-tabs {
@@ -551,6 +616,7 @@
             cursor: pointer;
             transition: all 0.3s;
             padding: 10px 5px;
+            position: relative;
         }
         
         .light-theme .tab {
@@ -565,14 +631,39 @@
             color: #8B0000;
         }
         
+        .tab::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 3px;
+            background: #8B0000;
+            transition: width 0.3s ease;
+        }
+        
+        .tab.active::before {
+            width: 40px;
+        }
+        
         .tab-icon {
             font-size: 20px;
             margin-bottom: 5px;
-            transition: transform 0.3s;
+            transition: all 0.3s ease;
         }
         
         .tab.active .tab-icon {
             transform: scale(1.2);
+        }
+        
+        .tab-highlight {
+            position: absolute;
+            bottom: 0;
+            height: 3px;
+            background: #8B0000;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1;
         }
     </style>
 </head>
@@ -602,10 +693,10 @@
                     </div>
                     
                     <div class="gesture-overlay" id="gestureOverlay">
-                        <div class="gesture-hint hint-next">↗️</div>
-                        <div class="gesture-hint hint-prev">↙️</div>
-                        <div class="gesture-hint hint-info">⬆️</div>
-                        <div class="gesture-hint hint-like">👆👆</div>
+                        <div class="gesture-hint hint-next"></div>
+                        <div class="gesture-hint hint-prev"></div>
+                        <div class="gesture-hint hint-info"></div>
+                        <div class="gesture-hint hint-like"></div>
                     </div>
                     
                     <div class="like-animation" id="likeAnimation">❤️</div>
@@ -730,21 +821,22 @@
             </div>
         </div>
         
-        <!-- НИЖНЕЕ МЕНЮ -->
-        <div class="bottom-tabs">
-            <button class="tab active" onclick="showScreen('homeScreen')">
+        <!-- НИЖНЕЕ МЕНЮ С ПЛАВНЫМ ВЫБОРОМ -->
+        <div class="bottom-tabs" id="bottomTabs">
+            <div class="tab-highlight" id="tabHighlight"></div>
+            <button class="tab active" onclick="showScreen('homeScreen')" data-tab="home">
                 <div class="tab-icon">📸</div>
                 <div>Главная</div>
             </button>
-            <button class="tab" onclick="showScreen('searchScreen')">
+            <button class="tab" onclick="showScreen('searchScreen')" data-tab="search">
                 <div class="tab-icon">🔍</div>
                 <div>Поиск</div>
             </button>
-            <button class="tab" onclick="showScreen('favoritesScreen')">
+            <button class="tab" onclick="showScreen('favoritesScreen')" data-tab="favorites">
                 <div class="tab-icon">❤️</div>
                 <div>Избранное</div>
             </button>
-            <button class="tab" onclick="showScreen('settingsScreen')">
+            <button class="tab" onclick="showScreen('settingsScreen')" data-tab="settings">
                 <div class="tab-icon">⚙️</div>
                 <div>Настройки</div>
             </button>
@@ -820,6 +912,8 @@
         let dragStartX = 0;
         let dragStartY = 0;
         let currentSearchTag = 'все';
+        let dragOffsetX = 0;
+        let dragOffsetY = 0;
 
         // Инициализация
         function init() {
@@ -827,9 +921,11 @@
             updateDisplay();
             setupGestures();
             setupDragAndDrop();
+            setupSmoothMenu();
             updateSettingsButtons();
             applyTheme();
             updateSearchResults();
+            updateTabHighlight();
         }
         
         // Загрузка данных
@@ -885,13 +981,9 @@
         
         function getNavigationHint() {
             if (appData.navMode === 'diagonal') {
-                return appData.showPhotos ? 
-                    '↗️ Следующее • ↙️ Предыдущее • 👆👆 Избранное' : 
-                    '↗️ Следующее • ↙️ Предыдущее • 👆👆 Избранное';
+                return 'Потяните фото по диагонали';
             } else {
-                return appData.showPhotos ? 
-                    '⬆️ Следующее • 👆👆 Избранное' : 
-                    '⬆️ Следующее • 👆👆 Избранное';
+                return 'Свайпните вверх для следующего фото';
             }
         }
         
@@ -916,18 +1008,17 @@
                 setTimeout(() => {
                     currentSlide.classList.remove('entering-next');
                     currentSlide.classList.add('current');
-                }, appData.fastAnimations ? 300 : 500);
+                }, 500);
                 
-            }, appData.fastAnimations ? 300 : 500);
+            }, 500);
         }
         
         function previousPhoto() {
-            const currentSlide = document.getElementById('currentSlide');
-            const isFeedMode = appData.navMode === 'feed';
-            
-            if (isFeedMode) {
-                return;
+            if (appData.navMode === 'feed') {
+                return; // В режиме ленты только вперед
             }
+            
+            const currentSlide = document.getElementById('currentSlide');
             
             currentSlide.classList.remove('current');
             currentSlide.classList.add('leaving-prev');
@@ -945,19 +1036,22 @@
                 setTimeout(() => {
                     currentSlide.classList.remove('entering-prev');
                     currentSlide.classList.add('current');
-                }, appData.fastAnimations ? 300 : 500);
+                }, 500);
                 
-            }, appData.fastAnimations ? 300 : 500);
+            }, 500);
         }
         
-        // Drag and Drop для фото
+        // Drag and Drop для фото с уменьшением
         function setupDragAndDrop() {
             const slide = document.getElementById('currentSlide');
+            const viewport = document.getElementById('photoViewport');
             
             slide.addEventListener('touchstart', (e) => {
                 isDragging = true;
                 dragStartX = e.touches[0].clientX;
                 dragStartY = e.touches[0].clientY;
+                dragOffsetX = 0;
+                dragOffsetY = 0;
                 slide.classList.add('dragging');
             });
             
@@ -967,14 +1061,18 @@
                 const currentX = e.touches[0].clientX;
                 const currentY = e.touches[0].clientY;
                 
-                const deltaX = currentX - dragStartX;
-                const deltaY = currentY - dragStartY;
+                dragOffsetX = currentX - dragStartX;
+                dragOffsetY = currentY - dragStartY;
+                
+                // Вычисляем расстояние от центра
+                const distance = Math.sqrt(dragOffsetX * dragOffsetX + dragOffsetY * dragOffsetY);
+                const maxDistance = 300;
+                
+                // Плавное уменьшение масштаба в зависимости от расстояния
+                const scale = Math.max(0.3, 1 - (distance / maxDistance));
                 
                 // Плавное перемещение фото за пальцем
-                const scale = Math.max(0.7, 1 - Math.sqrt(deltaX * deltaX + deltaY * deltaY) / 500);
-                const rotate = deltaX * 0.1;
-                
-                slide.style.transform = `translate(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px)) scale(${scale}) rotate(${rotate}deg)`;
+                slide.style.transform = `translate(calc(-50% + ${dragOffsetX}px), calc(-50% + ${dragOffsetY}px)) scale(${scale})`;
             });
             
             slide.addEventListener('touchend', (e) => {
@@ -983,32 +1081,93 @@
                 isDragging = false;
                 slide.classList.remove('dragging');
                 
-                const endX = e.changedTouches[0].clientX;
-                const endY = e.changedTouches[0].clientY;
+                const distance = Math.sqrt(dragOffsetX * dragOffsetX + dragOffsetY * dragOffsetY);
+                const threshold = 150;
                 
-                const deltaX = endX - dragStartX;
-                const deltaY = endY - dragStartY;
-                
-                // Определяем направление свайпа
-                if (Math.abs(deltaX) > 80 || Math.abs(deltaY) > 80) {
+                // Если переместили достаточно далеко - переключаем фото
+                if (distance > threshold) {
                     if (appData.navMode === 'diagonal') {
-                        if (deltaX > 0 && deltaY < 0) {
+                        if (dragOffsetX > 0 && dragOffsetY < 0) {
                             nextPhoto();
-                        } else if (deltaX < 0 && deltaY > 0) {
+                        } else if (dragOffsetX < 0 && dragOffsetY > 0) {
                             previousPhoto();
                         }
                     } else {
-                        if (deltaY < -80) {
+                        if (dragOffsetY < -threshold) {
                             nextPhoto();
                         }
                     }
                 }
                 
-                // Возвращаем фото на место
+                // Плавно возвращаем фото на место
+                slide.style.transition = 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+                slide.style.transform = '';
+                
                 setTimeout(() => {
-                    slide.style.transform = '';
-                }, 300);
+                    slide.style.transition = '';
+                }, 400);
             });
+        }
+        
+        // Плавное меню с перетаскиванием
+        function setupSmoothMenu() {
+            const tabs = document.getElementById('bottomTabs');
+            let isMenuDragging = false;
+            let menuStartX = 0;
+            let currentTabIndex = 0;
+            
+            tabs.addEventListener('touchstart', (e) => {
+                isMenuDragging = true;
+                menuStartX = e.touches[0].clientX;
+                currentTabIndex = Array.from(tabs.children).findIndex(child => 
+                    child.classList.contains('tab') && child.classList.contains('active')
+                );
+            });
+            
+            tabs.addEventListener('touchmove', (e) => {
+                if (!isMenuDragging) return;
+                
+                const currentX = e.touches[0].clientX;
+                const diffX = currentX - menuStartX;
+                const tabWidth = tabs.offsetWidth / 4;
+                
+                // Вычисляем новый активный таб на основе перемещения
+                let newTabIndex = currentTabIndex - Math.round(diffX / (tabWidth * 0.5));
+                newTabIndex = Math.max(0, Math.min(3, newTabIndex));
+                
+                // Плавно перемещаем подсветку
+                updateTabHighlight(newTabIndex);
+            });
+            
+            tabs.addEventListener('touchend', (e) => {
+                if (!isMenuDragging) return;
+                
+                isMenuDragging = false;
+                const currentX = e.changedTouches[0].clientX;
+                const diffX = currentX - menuStartX;
+                const tabWidth = tabs.offsetWidth / 4;
+                
+                // Определяем выбранный таб
+                let newTabIndex = currentTabIndex - Math.round(diffX / (tabWidth * 0.5));
+                newTabIndex = Math.max(0, Math.min(3, newTabIndex));
+                
+                // Активируем выбранный таб
+                const tabNames = ['homeScreen', 'searchScreen', 'favoritesScreen', 'settingsScreen'];
+                showScreen(tabNames[newTabIndex]);
+            });
+        }
+        
+        function updateTabHighlight(index = null) {
+            const highlight = document.getElementById('tabHighlight');
+            const tabs = document.querySelectorAll('.tab');
+            const activeTab = index !== null ? tabs[index] : document.querySelector('.tab.active');
+            
+            if (activeTab) {
+                const tabIndex = Array.from(tabs).indexOf(activeTab);
+                const tabWidth = 100 / tabs.length;
+                highlight.style.width = `${tabWidth}%`;
+                highlight.style.left = `${tabIndex * tabWidth}%`;
+            }
         }
         
         // Двойной тап для лайка
@@ -1065,7 +1224,6 @@
         function filterByTag(tag) {
             currentSearchTag = tag;
             
-            // Обновляем активные теги
             document.querySelectorAll('.search-tag').forEach(tagEl => {
                 tagEl.classList.remove('active');
             });
@@ -1135,14 +1293,16 @@
             });
             
             document.getElementById(screenId).classList.add('active');
-            event.currentTarget.classList.add('active');
             
-            if (screenId === 'favoritesScreen') {
-                updateFavorites();
-            } else if (screenId === 'settingsScreen') {
-                updateSettingsDisplay();
-            } else if (screenId === 'searchScreen') {
-                updateSearchResults();
+            // Находим соответствующую кнопку и активируем её
+            const tabButtons = document.querySelectorAll('.tab');
+            const tabIndex = Array.from(tabButtons).findIndex(tab => 
+                tab.getAttribute('onclick').includes(screenId)
+            );
+            
+            if (tabIndex !== -1) {
+                tabButtons[tabIndex].classList.add('active');
+                updateTabHighlight(tabIndex);
             }
         }
         
@@ -1237,8 +1397,15 @@
         function toggleNavMode() {
             appData.navMode = appData.navMode === 'diagonal' ? 'feed' : 'diagonal';
             const btn = document.getElementById('navModeToggle');
+            const mainContent = document.getElementById('mainContent');
             
             btn.textContent = appData.navMode === 'diagonal' ? 'ДИАГОНАЛЬ' : 'ЛЕНТА';
+            
+            if (appData.navMode === 'feed') {
+                mainContent.classList.add('feed-mode');
+            } else {
+                mainContent.classList.remove('feed-mode');
+            }
             
             updateDisplay();
             saveData();
