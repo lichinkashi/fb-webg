@@ -105,9 +105,10 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             box-shadow: 0 10px 30px rgba(139, 0, 0, 0.3);
             touch-action: none;
+            will-change: transform, opacity;
         }
         
         .light-theme .photo-slide {
@@ -125,22 +126,22 @@
         }
         
         .photo-slide.leaving-next {
-            animation: slideOutNext 0.5s forwards;
+            animation: slideOutNext 0.5s ease-out forwards;
         }
         
         .photo-slide.entering-next {
-            animation: slideInNext 0.5s forwards;
+            animation: slideInNext 0.5s ease-out forwards;
         }
         
         .photo-slide.leaving-prev {
-            animation: slideOutPrev 0.5s forwards;
+            animation: slideOutPrev 0.5s ease-out forwards;
         }
         
         .photo-slide.entering-prev {
-            animation: slideInPrev 0.5s forwards;
+            animation: slideInPrev 0.5s ease-out forwards;
         }
         
-        /* ИСПРАВЛЕННЫЕ ДИАГОНАЛЬНЫЕ АНИМАЦИИ */
+        /* ПЛАВНЫЕ ДИАГОНАЛЬНЫЕ АНИМАЦИИ */
         @keyframes slideOutNext {
             0% {
                 transform: translate(-50%, -50%) scale(1);
@@ -204,6 +205,11 @@
             opacity: 0.9;
             color: #fff;
             text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+            transition: opacity 0.5s ease;
+        }
+        
+        .photo-subtitle.hidden {
+            opacity: 0;
         }
         
         .photo-info {
@@ -219,9 +225,10 @@
             border-radius: 10px;
             margin: 0 20px;
             transform: translateY(20px);
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             color: #fff;
             border: 1px solid #333;
+            pointer-events: none;
         }
         
         .light-theme .photo-info {
@@ -657,7 +664,7 @@
                         <div class="photo-slide current" id="currentSlide">
                             <div class="photo-content">
                                 <div id="photoTitle">Пляжное фото</div>
-                                <div class="photo-subtitle" id="photoSubtitle">↗️ Следующее • ↙️ Предыдущее</div>
+                                <div class="photo-subtitle" id="photoSubtitle">Потяните фото по диагонали</div>
                             </div>
                             <div class="photo-info" id="photoInfo">
                                 📅 15 июня 2023 • 📍 Бали, Индонезия<br>
@@ -854,7 +861,8 @@
             showPhotos: true,
             darkTheme: true,
             startTime: Date.now(),
-            tutorialCompleted: false
+            tutorialCompleted: false,
+            tutorialShown: false
         };
         
         let lastTap = 0;
@@ -865,6 +873,7 @@
         let currentSearchTag = 'все';
         let dragOffsetX = 0;
         let dragOffsetY = 0;
+        let tutorialTimer = null;
 
         // Инициализация
         function init() {
@@ -877,6 +886,25 @@
             applyTheme();
             updateSearchResults();
             updateTabHighlight();
+            startTutorialTimer();
+        }
+        
+        // Таймер для скрытия подсказки
+        function startTutorialTimer() {
+            if (tutorialTimer) clearTimeout(tutorialTimer);
+            
+            tutorialTimer = setTimeout(() => {
+                if (appData.viewed >= 3 && !appData.tutorialShown) {
+                    hideTutorialText();
+                    appData.tutorialShown = true;
+                    saveData();
+                }
+            }, 60000); // 1 минута
+        }
+        
+        function hideTutorialText() {
+            const subtitle = document.getElementById('photoSubtitle');
+            subtitle.classList.add('hidden');
         }
         
         // Загрузка данных
@@ -889,6 +917,10 @@
                 photos.forEach(photo => {
                     photo.liked = appData.liked.includes(photo.id);
                 });
+                
+                if (appData.tutorialShown) {
+                    hideTutorialText();
+                }
             }
             appData.startTime = Date.now();
         }
@@ -916,7 +948,6 @@
             
             document.getElementById('photoTitle').textContent = appData.showPhotos ? photo.title : '📷 Фото скрыто';
             document.getElementById('photoTitle').style.opacity = appData.showPhotos ? '1' : '0.5';
-            document.getElementById('photoSubtitle').textContent = 'Потяните фото по диагонали';
             document.getElementById('photoCounter').textContent = currentPhotoIndex + 1;
             
             document.getElementById('photoInfo').innerHTML = 
@@ -929,7 +960,7 @@
             updateFavorites();
         }
         
-        // Анимированная навигация с исправленными диагоналями
+        // Анимированная навигация с плавными анимациями
         function nextPhoto() {
             const currentSlide = document.getElementById('currentSlide');
             
@@ -940,6 +971,7 @@
                 currentPhotoIndex = (currentPhotoIndex + 1) % photos.length;
                 appData.viewed++;
                 
+                // Сбрасываем анимации перед началом новой
                 currentSlide.classList.remove('leaving-next');
                 currentSlide.classList.add('entering-next');
                 
@@ -978,7 +1010,7 @@
             }, 500);
         }
         
-        // Drag and Drop для фото с уменьшением
+        // Drag and Drop только для диагональных жестов
         function setupDragAndDrop() {
             const slide = document.getElementById('currentSlide');
             const viewport = document.getElementById('photoViewport');
@@ -1001,15 +1033,21 @@
                 dragOffsetX = currentX - dragStartX;
                 dragOffsetY = currentY - dragStartY;
                 
-                // Вычисляем расстояние от центра
-                const distance = Math.sqrt(dragOffsetX * dragOffsetX + dragOffsetY * dragOffsetY);
-                const maxDistance = 300;
+                // Проверяем, что это диагональный жест (не вертикальный)
+                const isDiagonal = Math.abs(dragOffsetX) > Math.abs(dragOffsetY) * 0.7;
                 
-                // Плавное уменьшение масштаба в зависимости от расстояния
-                const scale = Math.max(0.3, 1 - (distance / maxDistance));
-                
-                // Плавное перемещение фото за пальцем
-                slide.style.transform = `translate(calc(-50% + ${dragOffsetX}px), calc(-50% + ${dragOffsetY}px)) scale(${scale})`;
+                if (isDiagonal) {
+                    // Вычисляем расстояние от центра
+                    const distance = Math.sqrt(dragOffsetX * dragOffsetX + dragOffsetY * dragOffsetY);
+                    const maxDistance = 300;
+                    
+                    // Плавное уменьшение масштаба в зависимости от расстояния
+                    const scale = Math.max(0.3, 1 - (distance / maxDistance));
+                    
+                    // Плавное перемещение фото за пальцем только для диагональных жестов
+                    slide.style.transform = `translate(calc(-50% + ${dragOffsetX}px), calc(-50% + ${dragOffsetY}px)) scale(${scale})`;
+                }
+                // Для вертикальных жестов фото не двигается
             });
             
             slide.addEventListener('touchend', (e) => {
@@ -1021,8 +1059,11 @@
                 const distance = Math.sqrt(dragOffsetX * dragOffsetX + dragOffsetY * dragOffsetY);
                 const threshold = 150;
                 
-                // Если переместили достаточно далеко - переключаем фото
-                if (distance > threshold) {
+                // Проверяем, что это диагональный жест
+                const isDiagonal = Math.abs(dragOffsetX) > Math.abs(dragOffsetY) * 0.7;
+                
+                // Если переместили достаточно далеко И это диагональный жест - переключаем фото
+                if (distance > threshold && isDiagonal) {
                     if (dragOffsetX > 0 && dragOffsetY < 0) {
                         // ↗️ Вправо-вверх - следующее фото
                         nextPhoto();
@@ -1300,7 +1341,20 @@
                 
                 startX = startY = null;
                 
-                // Диагональные жесты
+                // Вертикальные жесты для информации о фото
+                if (Math.abs(diffY) > 80 && Math.abs(diffX) < 50) {
+                    if (diffY < 0) {
+                        // ⬆️ Свайп вверх - показать информацию
+                        togglePhotoInfo();
+                        return;
+                    } else if (diffY > 0 && infoVisible) {
+                        // ⬇️ Свайп вниз - скрыть информацию (только если видна)
+                        togglePhotoInfo();
+                        return;
+                    }
+                }
+                
+                // Диагональные жесты для навигации
                 if (Math.abs(diffX) > 60 && Math.abs(diffY) > 60) {
                     if (diffX > 0 && diffY < 0) {
                         nextPhoto();
@@ -1310,16 +1364,6 @@
                         previousPhoto();
                         return;
                     }
-                }
-                
-                if (diffY < -100 && Math.abs(diffX) < 50) {
-                    togglePhotoInfo();
-                    return;
-                }
-                
-                if (diffY > 100 && Math.abs(diffX) < 50 && infoVisible) {
-                    togglePhotoInfo();
-                    return;
                 }
             });
         }
@@ -1380,8 +1424,12 @@
         
         function resetTutorial() {
             appData.tutorialCompleted = false;
+            appData.tutorialShown = false;
             appData.viewed = 0;
+            const subtitle = document.getElementById('photoSubtitle');
+            subtitle.classList.remove('hidden');
             saveData();
+            startTutorialTimer();
             alert('✅ Обучение сброшено!');
         }
         
