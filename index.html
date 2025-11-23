@@ -16,7 +16,7 @@
         }
         
         body { 
-            background: #000; 
+            background: #111; 
             color: #fff; 
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             height: 100vh;
@@ -37,6 +37,8 @@
             font-weight: bold;
             position: relative;
             z-index: 100;
+            color: #fff;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
         }
         
         .main-content {
@@ -92,7 +94,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             box-shadow: 0 10px 30px rgba(139, 0, 0, 0.3);
         }
         
@@ -103,19 +105,32 @@
         }
         
         .photo-slide.leaving-next {
-            animation: slideOutNext 0.5s forwards;
+            animation: slideOutNext 0.3s forwards;
         }
         
         .photo-slide.entering-next {
-            animation: slideInNext 0.5s forwards;
+            animation: slideInNext 0.3s forwards;
         }
         
         .photo-slide.leaving-prev {
-            animation: slideOutPrev 0.5s forwards;
+            animation: slideOutPrev 0.3s forwards;
         }
         
         .photo-slide.entering-prev {
-            animation: slideInPrev 0.5s forwards;
+            animation: slideInPrev 0.3s forwards;
+        }
+        
+        /* РЕЖИМ ЛЕНТЫ */
+        .feed-mode .photo-slide {
+            transition: all 0.25s ease;
+        }
+        
+        .feed-mode .photo-slide.leaving-next {
+            animation: feedSlideOut 0.25s forwards;
+        }
+        
+        .feed-mode .photo-slide.entering-next {
+            animation: feedSlideIn 0.25s forwards;
         }
         
         @keyframes slideOutNext {
@@ -162,17 +177,43 @@
             }
         }
         
+        @keyframes feedSlideOut {
+            0% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, -100%) scale(0.8);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes feedSlideIn {
+            0% {
+                transform: translate(-50%, 100%) scale(0.8);
+                opacity: 0;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+        }
+        
         .photo-content {
             text-align: center;
             font-size: 28px;
             font-weight: bold;
             transition: transform 0.3s;
+            color: #fff;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.7);
         }
         
         .photo-subtitle {
             margin-top: 10px;
             font-size: 16px;
-            opacity: 0.8;
+            opacity: 0.9;
+            color: #fff;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
         }
         
         .photo-info {
@@ -183,12 +224,14 @@
             text-align: center;
             font-size: 14px;
             opacity: 0;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.85);
             padding: 15px;
             border-radius: 10px;
             margin: 0 20px;
             transform: translateY(20px);
-            transition: all 0.4s ease;
+            transition: all 0.3s ease;
+            color: #fff;
+            border: 1px solid #333;
         }
         
         .photo-info.visible {
@@ -250,7 +293,7 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.9);
             padding: 20px 30px;
             border-radius: 20px;
             text-align: center;
@@ -258,6 +301,8 @@
             opacity: 0;
             transition: opacity 0.3s;
             pointer-events: none;
+            color: #fff;
+            border: 1px solid #333;
         }
         
         .double-tap-hint.show {
@@ -268,11 +313,13 @@
         .favorites-screen {
             padding: 20px;
             overflow-y: auto;
+            background: #111;
         }
         
         .favorites-header {
             text-align: center;
             margin-bottom: 20px;
+            color: #fff;
         }
         
         .favorites-grid {
@@ -288,6 +335,7 @@
             text-align: center;
             font-size: 18px;
             transition: transform 0.2s;
+            color: #fff;
         }
         
         .favorite-item:active {
@@ -300,17 +348,20 @@
             padding: 40px;
             opacity: 0.7;
             font-size: 18px;
+            color: #fff;
         }
         
         /* ЭКРАН НАСТРОЕК */
         .settings-screen {
             padding: 20px;
             overflow-y: auto;
+            background: #111;
         }
         
         .settings-header {
             text-align: center;
             margin-bottom: 20px;
+            color: #fff;
         }
         
         .settings-list {
@@ -324,8 +375,9 @@
             padding: 20px;
             margin: 15px 0;
             display: flex;
-            justify-content: between;
+            justify-content: space-between;
             align-items: center;
+            border: 1px solid #333;
         }
         
         .setting-info {
@@ -335,11 +387,13 @@
         .setting-title {
             font-size: 18px;
             margin-bottom: 5px;
+            color: #fff;
         }
         
         .setting-description {
             font-size: 14px;
-            opacity: 0.7;
+            opacity: 0.8;
+            color: #ccc;
         }
         
         .toggle-btn {
@@ -351,6 +405,7 @@
             cursor: pointer;
             min-width: 100px;
             transition: background 0.3s;
+            font-weight: bold;
         }
         
         .toggle-btn.off {
@@ -367,10 +422,26 @@
             width: 100%;
             margin-top: 10px;
             transition: background 0.3s;
+            font-weight: bold;
         }
         
         .action-btn:active {
             background: #600000;
+        }
+        
+        .settings-section {
+            background: #1a1a1a;
+            border-radius: 15px;
+            padding: 15px;
+            margin: 10px 0;
+            border: 1px solid #333;
+        }
+        
+        .settings-section-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #fff;
         }
         
         /* НИЖНЕЕ МЕНЮ */
@@ -421,7 +492,7 @@
         </div>
         
         <!-- Основной контент -->
-        <div class="main-content">
+        <div class="main-content" id="mainContent">
             <!-- ЭКРАН ПРОСМОТРА ФОТО -->
             <div class="screen active" id="homeScreen">
                 <div class="photo-screen">
@@ -471,43 +542,72 @@
                         <p>Настройте приложение</p>
                     </div>
                     <div class="settings-list">
-                        <div class="settings-item">
-                            <div class="setting-info">
-                                <div class="setting-title">🎮 Подсказки жестов</div>
-                                <div class="setting-description">Показывать подсказки для навигации</div>
+                        <!-- НАСТРОЙКИ ВНЕШНЕГО ВИДА -->
+                        <div class="settings-section">
+                            <div class="settings-section-title">🎨 Внешний вид</div>
+                            <div class="settings-item">
+                                <div class="setting-info">
+                                    <div class="setting-title">🎮 Подсказки жестов</div>
+                                    <div class="setting-description">Показывать подсказки для навигации</div>
+                                </div>
+                                <button class="toggle-btn" id="hintsToggle" onclick="toggleHints()">ВКЛ</button>
                             </div>
-                            <button class="toggle-btn" id="hintsToggle" onclick="toggleHints()">ВКЛ</button>
+                            
+                            <div class="settings-item">
+                                <div class="setting-info">
+                                    <div class="setting-title">📷 Показывать фото</div>
+                                    <div class="setting-description">Отображать фотографии в ленте</div>
+                                </div>
+                                <button class="toggle-btn" id="photosToggle" onclick="togglePhotos()">ВКЛ</button>
+                            </div>
+                            
+                            <div class="settings-item">
+                                <div class="setting-info">
+                                    <div class="setting-title">🌈 Цветовая тема</div>
+                                    <div class="setting-description">Тёмная или светлая тема</div>
+                                </div>
+                                <button class="toggle-btn" id="themeToggle" onclick="toggleTheme()">ТЁМНАЯ</button>
+                            </div>
                         </div>
                         
-                        <div class="settings-item">
-                            <div class="setting-info">
-                                <div class="setting-title">📊 Статистика</div>
-                                <div class="setting-description">Ваша активность в приложении</div>
+                        <!-- НАСТРОЙКИ НАВИГАЦИИ -->
+                        <div class="settings-section">
+                            <div class="settings-section-title">🎮 Управление</div>
+                            <div class="settings-item">
+                                <div class="setting-info">
+                                    <div class="setting-title">📱 Режим навигации</div>
+                                    <div class="setting-description">Диагональные жесты или лента</div>
+                                </div>
+                                <button class="toggle-btn" id="navModeToggle" onclick="toggleNavMode()">ДИАГОНАЛЬ</button>
                             </div>
-                        </div>
-                        <div style="background: #1a1a1a; border-radius: 15px; padding: 15px; margin: 10px 0;">
-                            <p>📸 Просмотрено фото: <span id="statsViewed">0</span></p>
-                            <p>❤️ В избранном: <span id="statsLiked">0</span></p>
-                            <p>🕒 Время использования: <span id="statsTime">0</span> мин</p>
+                            
+                            <div class="settings-item">
+                                <div class="setting-info">
+                                    <div class="setting-title">⚡ Скорость анимации</div>
+                                    <div class="setting-description">Быстрая или плавная смена фото</div>
+                                </div>
+                                <button class="toggle-btn" id="speedToggle" onclick="toggleSpeed()">БЫСТРАЯ</button>
+                            </div>
                         </div>
                         
-                        <div class="settings-item">
-                            <div class="setting-info">
-                                <div class="setting-title">🎨 Внешний вид</div>
-                                <div class="setting-description">Настройте тему приложения</div>
+                        <!-- СТАТИСТИКА -->
+                        <div class="settings-section">
+                            <div class="settings-section-title">📊 Статистика</div>
+                            <div style="padding: 15px;">
+                                <p>📸 Просмотрено фото: <span id="statsViewed">0</span></p>
+                                <p>❤️ В избранном: <span id="statsLiked">0</span></p>
+                                <p>🎮 Режим: <span id="statsMode">Диагональ</span></p>
+                                <p>🕒 Время использования: <span id="statsTime">0</span> мин</p>
                             </div>
-                            <button class="toggle-btn" id="themeToggle" onclick="toggleTheme()">ТЁМНАЯ</button>
                         </div>
                         
-                        <div class="settings-item">
-                            <div class="setting-info">
-                                <div class="setting-title">💾 Данные приложения</div>
-                                <div class="setting-description">Управление данными и сброс</div>
-                            </div>
+                        <!-- УПРАВЛЕНИЕ ДАННЫМИ -->
+                        <div class="settings-section">
+                            <div class="settings-section-title">💾 Данные приложения</div>
+                            <button class="action-btn" onclick="exportData()">📤 Экспорт данных</button>
+                            <button class="action-btn" onclick="clearData()">🗑️ Очистить все данные</button>
+                            <button class="action-btn" onclick="resetTutorial()">🔄 Сбросить обучение</button>
                         </div>
-                        <button class="action-btn" onclick="exportData()">📤 Экспорт данных</button>
-                        <button class="action-btn" onclick="clearData()">🗑️ Очистить все данные</button>
-                        <button class="action-btn" onclick="resetTutorial()">🔄 Сбросить обучение</button>
                     </div>
                 </div>
             </div>
@@ -580,7 +680,10 @@
             viewed: 0,
             liked: [],
             showHints: true,
+            showPhotos: true,
             darkTheme: true,
+            navMode: 'diagonal', // 'diagonal' или 'feed'
+            fastAnimations: true,
             startTime: Date.now(),
             tutorialCompleted: false
         };
@@ -594,6 +697,7 @@
             updateDisplay();
             setupGestures();
             updateSettingsButtons();
+            applyNavMode();
         }
         
         // Загрузка данных
@@ -603,7 +707,6 @@
                 const loaded = JSON.parse(saved);
                 appData = { ...appData, ...loaded };
                 
-                // Восстанавливаем лайки
                 photos.forEach(photo => {
                     photo.liked = appData.liked.includes(photo.id);
                 });
@@ -623,41 +726,48 @@
         function updateDisplay() {
             const photo = photos[currentPhotoIndex];
             
-            // Обновляем фото
-            document.getElementById('photoTitle').textContent = photo.title;
-            document.getElementById('photoSubtitle').textContent = 
-                photo.liked ? '❤️ В избранном • ↙️↗️ Навигация' : '↙️↗️ Навигация • 👆👆 Избранное';
+            document.getElementById('photoTitle').textContent = appData.showPhotos ? photo.title : '📷 Фото скрыто';
+            document.getElementById('photoTitle').style.opacity = appData.showPhotos ? '1' : '0.5';
+            document.getElementById('photoSubtitle').textContent = getNavigationHint();
             document.getElementById('photoCounter').textContent = currentPhotoIndex + 1;
             
-            // Обновляем информацию о фото
             document.getElementById('photoInfo').innerHTML = 
                 `📅 ${photo.date} • 📍 ${photo.location}<br>⚙️ ${photo.camera}`;
             
-            // Обновляем статистику
             document.getElementById('statsViewed').textContent = appData.viewed;
             document.getElementById('statsLiked').textContent = appData.liked.length;
             document.getElementById('statsTime').textContent = Math.floor((Date.now() - appData.startTime) / 60000);
+            document.getElementById('statsMode').textContent = appData.navMode === 'diagonal' ? 'Диагональ' : 'Лента';
             
-            // Обновляем избранное
             updateFavorites();
+        }
+        
+        function getNavigationHint() {
+            if (appData.navMode === 'diagonal') {
+                return appData.showPhotos ? 
+                    '↗️ Следующее • ↙️ Предыдущее • 👆👆 Избранное' : 
+                    '↗️ Следующее • ↙️ Предыдущее • 👆👆 Избранное';
+            } else {
+                return appData.showPhotos ? 
+                    '⬆️ Следующее • ⬇️ Предыдущее • 👆👆 Избранное' : 
+                    '⬆️ Следующее • ⬇️ Предыдущее • 👆👆 Избранное';
+            }
         }
         
         // Анимированная навигация
         function nextPhoto() {
             const currentSlide = document.getElementById('currentSlide');
+            const isFeedMode = appData.navMode === 'feed';
             
-            // Анимация ухода текущего фото в правый верхний угол
             currentSlide.classList.remove('current');
-            currentSlide.classList.add('leaving-next');
+            currentSlide.classList.add(isFeedMode ? 'leaving-next' : 'leaving-next');
             
             setTimeout(() => {
-                // Меняем фото
                 currentPhotoIndex = (currentPhotoIndex + 1) % photos.length;
                 appData.viewed++;
                 
-                // Сбрасываем анимации
                 currentSlide.classList.remove('leaving-next');
-                currentSlide.classList.add('entering-next');
+                currentSlide.classList.add(isFeedMode ? 'entering-next' : 'entering-next');
                 
                 updateDisplay();
                 saveData();
@@ -665,24 +775,27 @@
                 setTimeout(() => {
                     currentSlide.classList.remove('entering-next');
                     currentSlide.classList.add('current');
-                }, 500);
+                }, appData.fastAnimations ? 250 : 500);
                 
-            }, 500);
+            }, appData.fastAnimations ? 250 : 500);
         }
         
         function previousPhoto() {
             const currentSlide = document.getElementById('currentSlide');
+            const isFeedMode = appData.navMode === 'feed';
             
-            // Анимация ухода текущего фото в левый верхний угол
+            if (isFeedMode) {
+                // В режиме ленты только вперед
+                return;
+            }
+            
             currentSlide.classList.remove('current');
             currentSlide.classList.add('leaving-prev');
             
             setTimeout(() => {
-                // Меняем фото
                 currentPhotoIndex = (currentPhotoIndex - 1 + photos.length) % photos.length;
                 appData.viewed++;
                 
-                // Сбрасываем анимации
                 currentSlide.classList.remove('leaving-prev');
                 currentSlide.classList.add('entering-prev');
                 
@@ -692,9 +805,9 @@
                 setTimeout(() => {
                     currentSlide.classList.remove('entering-prev');
                     currentSlide.classList.add('current');
-                }, 500);
+                }, appData.fastAnimations ? 250 : 500);
                 
-            }, 500);
+            }, appData.fastAnimations ? 250 : 500);
         }
         
         // Двойной тап для лайка
@@ -703,7 +816,6 @@
             const timeSinceLastTap = now - lastTap;
             
             if (timeSinceLastTap < 300 && timeSinceLastTap > 0) {
-                // Двойной тап обнаружен
                 toggleLike();
                 showDoubleTapHint();
             }
@@ -716,7 +828,7 @@
             hint.classList.add('show');
             setTimeout(() => {
                 hint.classList.remove('show');
-            }, 2000);
+            }, 1500);
         }
         
         // Лайк
@@ -728,7 +840,6 @@
                 if (!appData.liked.includes(photo.id)) {
                     appData.liked.push(photo.id);
                 }
-                // Анимация сердца
                 const heart = document.getElementById('likeAnimation');
                 heart.classList.add('show');
                 setTimeout(() => {
@@ -759,7 +870,7 @@
             } else {
                 grid.innerHTML = likedPhotos.map(photo => `
                     <div class="favorite-item" onclick="openFavorite(${photo.id})">
-                        ${photo.title}<br>
+                        ${appData.showPhotos ? photo.title : '📷 Скрытое фото'}<br>
                         <small style="font-size: 24px;">❤️</small>
                     </div>
                 `).join('');
@@ -804,8 +915,6 @@
             viewport.addEventListener('touchstart', e => {
                 startX = e.touches[0].clientX;
                 startY = e.touches[0].clientY;
-                
-                // Обработка двойного тапа
                 handleDoubleTap();
             });
             
@@ -820,17 +929,25 @@
                 
                 startX = startY = null;
                 
-                // Диагональные жесты
-                if (Math.abs(diffX) > 50 && Math.abs(diffY) > 50) {
-                    if (diffX > 0 && diffY < 0) {
-                        // ↗️ Следующее фото
-                        nextPhoto();
-                        return;
+                if (appData.navMode === 'diagonal') {
+                    // Диагональные жесты
+                    if (Math.abs(diffX) > 40 && Math.abs(diffY) > 40) {
+                        if (diffX > 0 && diffY < 0) {
+                            nextPhoto();
+                            return;
+                        }
+                        if (diffX < 0 && diffY > 0) {
+                            previousPhoto();
+                            return;
+                        }
                     }
-                    if (diffX < 0 && diffY > 0) {
-                        // ↙️ Предыдущее фото
-                        previousPhoto();
-                        return;
+                } else {
+                    // Режим ленты (как в Instagram)
+                    if (Math.abs(diffY) > 60 && Math.abs(diffX) < 50) {
+                        if (diffY < 0) {
+                            nextPhoto(); // Свайп вверх = следующее
+                            return;
+                        }
                     }
                 }
                 
@@ -861,16 +978,57 @@
             saveData();
         }
         
+        function togglePhotos() {
+            appData.showPhotos = !appData.showPhotos;
+            const btn = document.getElementById('photosToggle');
+            
+            btn.textContent = appData.showPhotos ? 'ВКЛ' : 'ВЫКЛ';
+            btn.classList.toggle('off', !appData.showPhotos);
+            
+            updateDisplay();
+            saveData();
+        }
+        
+        function toggleNavMode() {
+            appData.navMode = appData.navMode === 'diagonal' ? 'feed' : 'diagonal';
+            const btn = document.getElementById('navModeToggle');
+            
+            btn.textContent = appData.navMode === 'diagonal' ? 'ДИАГОНАЛЬ' : 'ЛЕНТА';
+            
+            applyNavMode();
+            updateDisplay();
+            saveData();
+        }
+        
+        function applyNavMode() {
+            const mainContent = document.getElementById('mainContent');
+            if (appData.navMode === 'feed') {
+                mainContent.classList.add('feed-mode');
+            } else {
+                mainContent.classList.remove('feed-mode');
+            }
+        }
+        
+        function toggleSpeed() {
+            appData.fastAnimations = !appData.fastAnimations;
+            const btn = document.getElementById('speedToggle');
+            
+            btn.textContent = appData.fastAnimations ? 'БЫСТРАЯ' : 'ПЛАВНАЯ';
+            
+            saveData();
+        }
+        
         function toggleTheme() {
             appData.darkTheme = !appData.darkTheme;
             const btn = document.getElementById('themeToggle');
             
             if (appData.darkTheme) {
-                document.body.style.background = '#000';
+                document.body.style.background = '#111';
+                document.body.style.color = '#fff';
                 btn.textContent = 'ТЁМНАЯ';
             } else {
-                document.body.style.background = '#f0f0f0';
-                document.body.style.color = '#000';
+                document.body.style.background = '#f5f5f5';
+                document.body.style.color = '#333';
                 btn.textContent = 'СВЕТЛАЯ';
             }
             
@@ -907,6 +1065,12 @@
         function updateSettingsButtons() {
             document.getElementById('hintsToggle').textContent = appData.showHints ? 'ВКЛ' : 'ВЫКЛ';
             document.getElementById('hintsToggle').classList.toggle('off', !appData.showHints);
+            
+            document.getElementById('photosToggle').textContent = appData.showPhotos ? 'ВКЛ' : 'ВЫКЛ';
+            document.getElementById('photosToggle').classList.toggle('off', !appData.showPhotos);
+            
+            document.getElementById('navModeToggle').textContent = appData.navMode === 'diagonal' ? 'ДИАГОНАЛЬ' : 'ЛЕНТА';
+            document.getElementById('speedToggle').textContent = appData.fastAnimations ? 'БЫСТРАЯ' : 'ПЛАВНАЯ';
             document.getElementById('themeToggle').textContent = appData.darkTheme ? 'ТЁМНАЯ' : 'СВЕТЛАЯ';
         }
         
